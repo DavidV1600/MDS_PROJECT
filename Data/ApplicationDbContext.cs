@@ -1,13 +1,20 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using MDS_PROJECT.Models;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
+
+
+// PASUL 3 - useri si roluri
 
 namespace MDS_PROJECT.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
         }
+
+        public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     }
 }
