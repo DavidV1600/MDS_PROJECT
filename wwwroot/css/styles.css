@@ -1,0 +1,100 @@
+﻿/* Reset stiluri de bază */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+    header h1 {
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    header p {
+        color: #555;
+    }
+
+#search {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#product-search {
+    width: 70%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 5px 0 0 5px;
+    outline: none;
+}
+
+#search-btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    background-color: #5cb85c;
+    color: white;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+}
+
+    #search-btn:hover {
+        background-color: #4cae4c;
+    }
+
+#results {
+    padding: 20px;
+    background: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    color: #555;
+}
+
+@media (max-width: 768px) {
+    #product-search {
+        width: 60%;
+    }
+
+    #search-btn {
+        padding: 10px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    #product-search {
+        width: 50%;
+    }
+
+    #search {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #product-search,
+    #search-btn {
+        width: 100%;
+        border-radius: 5px;
+    }
+
+    #search-btn {
+        margin-top: 10px;
+    }
+}

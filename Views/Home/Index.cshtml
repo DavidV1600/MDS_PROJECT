@@ -1,8 +1,28 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CheapFind - Găsește Cel Mai Ieftin Produs</title>
+    <link href="/css/styles.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <header>
+        <h1>CheapFind</h1>
+        <p>Găsește rapid produsele la cel mai bun preț din apropierea ta!</p>
+    </header>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+    <section id="search">
+        <input type="text" id="product-search" placeholder="Caută un produs..." autofocus>
+        <button type="button" id="search-btn">Caută</button>
+    </section>
+
+    <section id="results">
+        <!-- Rezultatele produselor vor fi injectate aici -->
+    </section>
+
+    <footer>
+        <p>&copy; 2024 CheapFind. Toate drepturile rezervate.</p>
+    </footer>
+</body>
+</html>

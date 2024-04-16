@@ -14,7 +14,7 @@ namespace MDS_PROJECT.Data
             : base(options)
         {
         }
-
+        public DbSet<Product> Products {  get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     }
 }
