@@ -1,8 +1,45 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Google Maps Example</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB1gTiBHMbS3O3WHTVhvZ0vVmNGwAZIQDw"></script>
+</head>
+<body>
+<div id="map" style="height: 400px;"></div>
+<script>
+        function initMap() {
+            // Check if geolocation is supported
+            if (navigator.geolocation) {
+                // Get user's current position
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var userLocation = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+                    var map = new google.maps.Map(document.getElementById('map'), {
+                        center: userLocation,
+                        zoom: 8
+                    });
+
+                    // Add marker for user's current location
+                    var marker = new google.maps.Marker({
+                        position: userLocation,
+                        map: map,
+                        title: 'Your Location'
+                    });
+
+                    // You can add additional customization or markers here
+                }, function() {
+                    // Handle errors if geolocation fails
+                    console.error('Error: The Geolocation service failed.');
+                });
+            } else {
+                // Browser doesn't support Geolocation
+                console.error('Error: Your browser doesn\'t support geolocation.');
+            }
+        }
+        initMap();
+    </script>
+</body>
+</html>
