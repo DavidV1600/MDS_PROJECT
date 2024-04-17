@@ -1,0 +1,16 @@
+﻿@{
+	ViewData["Title"] = "Product Search";
+}
+
+<h1>Product Search</h1>
+
+<form asp-controller="Product" asp-action="Search" method="post">
+	<input type="text" name="query" />
+	<button type="submit">Search</button>
+</form>
+
+@if (ViewData["Result"] != null)
+{
+	<h2>Search Results</h2>
+	<div>@Html.Raw(ViewData["Result"])</div>
+}
