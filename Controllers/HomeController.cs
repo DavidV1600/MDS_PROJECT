@@ -1,6 +1,7 @@
 ﻿using MDS_PROJECT.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace MDS_PROJECT.Controllers
@@ -23,10 +24,12 @@ namespace MDS_PROJECT.Controllers
         }
 
         private readonly ILogger<HomeController> _logger;
+        private readonly IConfiguration _configuration;
 
-        public HomeController(ILogger<HomeController> logger)
+		public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
         {
             _logger = logger;
+            _configuration = configuration;
         }
 
         // Eliminați unul dintre atributele [HttpPost] redundante
@@ -55,13 +58,17 @@ namespace MDS_PROJECT.Controllers
 
         private async Task<string> GetSearchResult(string scriptPath, string query)
         {
+	        string pythonExePath = _configuration["PathVariables:PythonExePath"];
+	        string scriptFolderPath = _configuration["PathVariables:ScriptFolderPath"];
+
             ProcessStartInfo start = new ProcessStartInfo
             {
-                FileName = "C:\\Users\\Alex\\AppData\\Local\\Programs\\Python\\Launcher\\py.exe",
-                Arguments = $"C:\\Users\\Alex\\Desktop\\Proiect\\{scriptPath} {query}",
-                UseShellExecute = false,
-                RedirectStandardOutput = true
-            };
+				FileName = pythonExePath,
+				Arguments = $"{scriptFolderPath}{scriptPath} {query}", // Use the script folder path variable and the script path
+				UseShellExecute = false,
+                RedirectStandardOutput = true,
+                StandardOutputEncoding = Encoding.UTF8
+			};
 
             using (Process process = Process.Start(start))
             {
@@ -89,6 +96,7 @@ namespace MDS_PROJECT.Controllers
         }
         private List<ItemResult> ParseKauflandResults(string results)
         {
+            Console.WriteLine("SUNT IN KAUFLAND");
             List<ItemResult> kauflandResults = new List<ItemResult>();
             var lines = results.Split(new string[] { "--------------------------------" }, StringSplitOptions.RemoveEmptyEntries);
 
