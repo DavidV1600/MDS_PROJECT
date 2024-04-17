@@ -1,29 +1,45 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CheapFind - Găsește Cel Mai Ieftin Produs</title>
-    <link href="/css/styles.css" rel="stylesheet" type="text/css" />
-</head>
-<body>
-    <header>
-        <h1>CheapFind</h1>
-        <p>Găsește rapid produsele la cel mai bun preț din apropierea ta!</p>
-    </header>
+﻿@model MDS_PROJECT.Controllers.HomeController.SearchViewModel
 
-    <form asp-controller="Home" asp-action="SearchCarrefour" method="post">
-        <input type="text" name="query" placeholder="Enter a word">
-        <button type="submit">Print Word</button>
-    </form>
+<!-- Începutul HTML-ului -->
 
-    <form asp-controller="Home" asp-action="SearchKaufland" method="post">
-        <input type="text" name="query" placeholder="Enter a word">
-        <button type="submit">Print Word</button>
-    </form>
+<form asp-controller="Home" asp-action="SearchBoth" method="post">
+    <input type="text" name="query" placeholder="Caută un produs...">
+    <button type="submit">Caută</button>
+</form>
 
-    <footer>
-        <p>&copy; 2024 CheapFind. Toate drepturile rezervate.</p>
-    </footer>
-</body>
-</html>
+
+<div style="display: flex; justify-content: space-between;">
+    <div style="width: 45%;">
+        <h2>Carrefour</h2>
+        @if (Model.CarrefourResults.Any())
+        {
+            <ul>
+                @foreach (var item in Model.CarrefourResults)
+                {
+                    <li>@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>Nu s-au găsit rezultate.</p>
+        }
+    </div>
+    <div style="width: 45%;">
+        <h2>Kaufland</h2>
+        @if (Model.KauflandResults.Any())
+        {
+            <ul>
+                @foreach (var item in Model.KauflandResults)
+                {
+                    <li>@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>Nu s-au găsit rezultate.</p>
+        }
+    </div>
+
+</div>
