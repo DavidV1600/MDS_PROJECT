@@ -12,14 +12,15 @@
         <p>Găsește rapid produsele la cel mai bun preț din apropierea ta!</p>
     </header>
 
-    <section id="search">
-        <input type="text" id="product-search" placeholder="Caută un produs..." autofocus>
-        <button type="button" id="search-btn">Caută</button>
-    </section>
+    <form asp-controller="Home" asp-action="SearchCarrefour" method="post">
+        <input type="text" name="query" placeholder="Enter a word">
+        <button type="submit">Print Word</button>
+    </form>
 
-    <section id="results">
-        <!-- Rezultatele produselor vor fi injectate aici -->
-    </section>
+    <form asp-controller="Home" asp-action="SearchKaufland" method="post">
+        <input type="text" name="query" placeholder="Enter a word">
+        <button type="submit">Print Word</button>
+    </form>
 
     <footer>
         <p>&copy; 2024 CheapFind. Toate drepturile rezervate.</p>
