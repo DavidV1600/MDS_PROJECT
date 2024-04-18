@@ -8,49 +8,53 @@
 </form>
 
 <!-- Results Section -->
+<!-- Results Section -->
 <div class="results-container">
-    <div class="results">
-        <h2>Carrefour</h2>
-        @if (Model.CarrefourResults != null && Model.CarrefourResults.Any())
-        {
-            <div>
-                <button onclick="sortCarrefourResultsByPrice()">Sort by Price</button>
-                <button onclick="sortCarrefourResultsByName()">Sort by Name</button>
-            </div>
-            <ul class="product-list">
-                @foreach (var item in Model.CarrefourResults)
-                {
-                    <li>&#8226; @item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
-                }
-            </ul>
-        }
-        else
-        {
-            <p class="no-results">Nu s-au găsit rezultate pentru Carrefour.</p>
-        }
-    </div>
+	<div class="results">
+		<h2>Carrefour</h2>
+		@if (Model.CarrefourResults != null && Model.CarrefourResults.Any())
+		{
+			<div>
+				<button onclick="sortCarrefourResultsByPrice()">Sort by Price</button>
+				<button onclick="sortCarrefourResultsByName()">Sort by Name</button>
+				<button onclick="sortCarrefourResultsByQuantity()">Sort by Quantity</button>
+			</div>
+			<ul id="carrefour-results" class="product-list">
+				@foreach (var item in Model.CarrefourResults)
+				{
+					<li>@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+				}
+			</ul>
+		}
+		else
+		{
+			<p class="no-results">Nu s-au găsit rezultate pentru Carrefour.</p>
+		}
+	</div>
 
-    <div class="results">
-        <h2>Kaufland</h2>
-        @if (Model.KauflandResults != null && Model.KauflandResults.Any())
-        {
-            <div>
-                <button onclick="sortKauflandResultsByPrice()">Sort by Price</button>
-                <button onclick="sortKauflandResultsByName()">Sort by Name</button>
-            </div>
-            <ul class="product-list">
-                @foreach (var item in Model.KauflandResults)
-                {
-                    <li>&#8226; @item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
-                }
-            </ul>
-        }
-        else
-        {
-            <p class="no-results">Nu s-au găsit rezultate pentru Kaufland.</p>
-        }
-    </div>
+	<div class="results">
+		<h2>Kaufland</h2>
+		@if (Model.KauflandResults != null && Model.KauflandResults.Any())
+		{
+			<div>
+				<button onclick="sortKauflandResultsByPrice()">Sort by Price</button>
+				<button onclick="sortKauflandResultsByName()">Sort by Name</button>
+				<button onclick="sortKauflandResultsByQuantity()">Sort by Quantity</button>
+			</div>
+			<ul id="kaufland-results" class="product-list">
+				@foreach (var item in Model.KauflandResults)
+				{
+					<li>@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+				}
+			</ul>
+		}
+		else
+		{
+			<p class="no-results">Nu s-au găsit rezultate pentru Kaufland.</p>
+		}
+	</div>
 </div>
+
 
 <!-- CSS Styling -->
 <style>
@@ -74,23 +78,122 @@
     .no-results {
         color: red;
     }
+
+    button:active {
+        background-color: #ccc;
+    }
+
 </style>
 
 <!-- JavaScript Functions -->
 <script>
+    var carrefourSortByPriceAsc = true;
+    var carrefourSortByNameAsc = true;
+    var carrefourSortByQuantityAsc = true;
+
+    var kauflandSortByPriceAsc = true;
+    var kauflandSortByNameAsc = true;
+    var kauflandSortByQuantityAsc = true;
+
     function sortCarrefourResultsByPrice() {
-        // Implement sorting logic for Carrefour results by price
+        var ul = document.getElementById("carrefour-results");
+        var items = ul.getElementsByTagName("li");
+        var sortedItems = Array.from(items).sort(function (a, b) {
+            var priceA = getPriceValue(a.innerText);
+            var priceB = getPriceValue(b.innerText);
+            return carrefourSortByPriceAsc ? priceA - priceB : priceB - priceA;
+        });
+        for (var i = 0; i < sortedItems.length; i++) {
+            ul.appendChild(sortedItems[i]);
+        }
+        carrefourSortByPriceAsc = !carrefourSortByPriceAsc;
     }
 
     function sortCarrefourResultsByName() {
-        // Implement sorting logic for Carrefour results by name
+        var ul = document.getElementById("carrefour-results");
+        var items = ul.getElementsByTagName("li");
+        var sortedItems = Array.from(items).sort(function (a, b) {
+            var nameA = a.innerText.split(",")[0].trim();
+            var nameB = b.innerText.split(",")[0].trim();
+            return carrefourSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+        });
+        for (var i = 0; i < sortedItems.length; i++) {
+            ul.appendChild(sortedItems[i]);
+        }
+        carrefourSortByNameAsc = !carrefourSortByNameAsc;
+    }
+
+    function sortCarrefourResultsByQuantity() {
+        var ul = document.getElementById("carrefour-results");
+        var items = ul.getElementsByTagName("li");
+        var sortedItems = Array.from(items).sort(function (a, b) {
+            var quantityA = getQuantityValue(a.innerText);
+            var quantityB = getQuantityValue(b.innerText);
+            return carrefourSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
+        });
+        for (var i = 0; i < sortedItems.length; i++) {
+            ul.appendChild(sortedItems[i]);
+        }
+        carrefourSortByQuantityAsc = !carrefourSortByQuantityAsc;
     }
 
     function sortKauflandResultsByPrice() {
-        // Implement sorting logic for Kaufland results by price
+        var ul = document.getElementById("kaufland-results");
+        var items = ul.getElementsByTagName("li");
+        var sortedItems = Array.from(items).sort(function (a, b) {
+            var priceA = getPriceValue(a.innerText);
+            var priceB = getPriceValue(b.innerText);
+            return kauflandSortByPriceAsc ? priceA - priceB : priceB - priceA;
+        });
+        for (var i = 0; i < sortedItems.length; i++) {
+            ul.appendChild(sortedItems[i]);
+        }
+        kauflandSortByPriceAsc = !kauflandSortByPriceAsc;
     }
 
     function sortKauflandResultsByName() {
-        // Implement sorting logic for Kaufland results by name
+        var ul = document.getElementById("kaufland-results");
+        var items = ul.getElementsByTagName("li");
+        var sortedItems = Array.from(items).sort(function (a, b) {
+            var nameA = a.innerText.split(",")[0].trim();
+            var nameB = b.innerText.split(",")[0].trim();
+            return kauflandSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+        });
+        for (var i = 0; i < sortedItems.length; i++) {
+            ul.appendChild(sortedItems[i]);
+        }
+        kauflandSortByNameAsc = !kauflandSortByNameAsc;
     }
+
+    function sortKauflandResultsByQuantity() {
+        var ul = document.getElementById("kaufland-results");
+        var items = ul.getElementsByTagName("li");
+        var sortedItems = Array.from(items).sort(function (a, b) {
+            var quantityA = getQuantityValue(a.innerText);
+            var quantityB = getQuantityValue(b.innerText);
+            return kauflandSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
+        });
+        for (var i = 0; i < sortedItems.length; i++) {
+            ul.appendChild(sortedItems[i]);
+        }
+        kauflandSortByQuantityAsc = !kauflandSortByQuantityAsc;
+    }
+
+    // Function to extract price value from the string
+    function getPriceValue(itemText) {
+        // Use regular expression to extract all numbers (with or without commas)
+        var numbers = itemText.match(/\d+([.,]\d+)?/g);
+        // Return the last extracted number as the price value
+        return parseFloat(numbers[numbers.length - 1].replace(",", "."));
+    }
+
+    // Function to extract quantity value from the string
+    function getQuantityValue(itemText) {
+        // Use regular expression to extract all numbers (with or without commas)
+        var numbers = itemText.match(/\d+([.,]\d+)?/g);
+        // Return the second-to-last extracted number as the quantity value
+        return parseFloat(numbers[numbers.length - 2].replace(",", "."));
+    }
+
+
 </script>
