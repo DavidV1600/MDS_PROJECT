@@ -1,199 +1,260 @@
 @using System.Linq
 @model MDS_PROJECT.Controllers.HomeController.SearchViewModel
 
-<!-- HTML Form -->
-<form asp-controller="Home" asp-action="SearchBoth" method="post">
-    <input type="text" name="query" placeholder="Caută un produs...">
-    <button type="submit">Caută</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Maps Example</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&amp;libraries=places"></script>
+</head>
+<body>
+    <!-- HTML Form -->
+    <form asp-controller="Home" asp-action="SearchBoth" method="post">
+        <input type="text" name="query" placeholder="Caută un produs...">
+        <button type="submit">Caută</button>
+    </form>
 
-<!-- Results Section -->
-<!-- Results Section -->
-<div class="results-container">
-	<div class="results">
-		<h2>Carrefour</h2>
-		@if (Model.CarrefourResults != null && Model.CarrefourResults.Any())
-		{
-			<div>
-				<button onclick="sortCarrefourResultsByPrice()">Sort by Price</button>
-				<button onclick="sortCarrefourResultsByName()">Sort by Name</button>
-				<button onclick="sortCarrefourResultsByQuantity()">Sort by Quantity</button>
-			</div>
-			<ul id="carrefour-results" class="product-list">
-				@foreach (var item in Model.CarrefourResults)
-				{
-					<li>@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
-				}
-			</ul>
-		}
-		else
-		{
-			<p class="no-results">Nu s-au găsit rezultate pentru Carrefour.</p>
-		}
-	</div>
+    <!-- Quantity and Price Range Inputs -->
+    <div>
+        <label for="quantityMin">Quantity Range:</label>
+        <input type="number" id="quantityMin" name="quantityMin" value="0">
+        <input type="number" id="quantityMax" name="quantityMax" value="100">
+    </div>
 
-	<div class="results">
-		<h2>Kaufland</h2>
-		@if (Model.KauflandResults != null && Model.KauflandResults.Any())
-		{
-			<div>
-				<button onclick="sortKauflandResultsByPrice()">Sort by Price</button>
-				<button onclick="sortKauflandResultsByName()">Sort by Name</button>
-				<button onclick="sortKauflandResultsByQuantity()">Sort by Quantity</button>
-			</div>
-			<ul id="kaufland-results" class="product-list">
-				@foreach (var item in Model.KauflandResults)
-				{
-					<li>@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
-				}
-			</ul>
-		}
-		else
-		{
-			<p class="no-results">Nu s-au găsit rezultate pentru Kaufland.</p>
-		}
-	</div>
-</div>
+    <div>
+        <label for="priceMin">Price Range:</label>
+        <input type="number" id="priceMin" name="priceMin" value="0">
+        <input type="number" id="priceMax" name="priceMax" value="100">
+    </div>
 
+    <button onclick="applyFilters()">Apply Filters</button>
 
-<!-- CSS Styling -->
-<style>
-    .results-container {
-        display: flex;
-        justify-content: space-between;
-    }
+    <!-- Results Section -->
+    <div class="results-container">
+        <div class="results">
+            <h2>Carrefour</h2>
+            @if (Model.CarrefourResults != null && Model.CarrefourResults.Any())
+            {
+                <div>
+                    <button onclick="sortCarrefourResultsByPrice()">Sort by Price</button>
+                    <button onclick="sortCarrefourResultsByName()">Sort by Name</button>
+                    <button onclick="sortCarrefourResultsByQuantity()">Sort by Quantity</button>
+                </div>
+                <ul id="carrefour-results" class="product-list">
+                    @foreach (var item in Model.CarrefourResults)
+                    {
+                        <li class="carrefour-item" data-quantity="@item.Quantity" data-price="@item.Price">@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="no-results">Nu s-au găsit rezultate pentru Carrefour.</p>
+            }
+        </div>
 
-    .results {
-        width: 45%;
-    }
+        <div class="results">
+            <h2>Kaufland</h2>
+            @if (Model.KauflandResults != null && Model.KauflandResults.Any())
+            {
+                <div>
+                    <button onclick="sortKauflandResultsByPrice()">Sort by Price</button>
+                    <button onclick="sortKauflandResultsByName()">Sort by Name</button>
+                    <button onclick="sortKauflandResultsByQuantity()">Sort by Quantity</button>
+                </div>
+                <ul id="kaufland-results" class="product-list">
+                    @foreach (var item in Model.KauflandResults)
+                    {
+                        <li class="kaufland-item" data-quantity="@item.Quantity" data-price="@item.Price">@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="no-results">Nu s-au găsit rezultate pentru Kaufland.</p>
+            }
+        </div>
+    </div>
 
-    .product-list {
-        padding: 0;
-    }
-
-        .product-list li {
-            margin-bottom: 10px;
+    <!-- CSS Styling -->
+    <style>
+        .results-container {
+            display: flex;
+            justify-content: space-between;
         }
 
-    .no-results {
-        color: red;
-    }
-
-    button:active {
-        background-color: #ccc;
-    }
-
-</style>
-
-<!-- JavaScript Functions -->
-<script>
-    var carrefourSortByPriceAsc = true;
-    var carrefourSortByNameAsc = true;
-    var carrefourSortByQuantityAsc = true;
-
-    var kauflandSortByPriceAsc = true;
-    var kauflandSortByNameAsc = true;
-    var kauflandSortByQuantityAsc = true;
-
-    function sortCarrefourResultsByPrice() {
-        var ul = document.getElementById("carrefour-results");
-        var items = ul.getElementsByTagName("li");
-        var sortedItems = Array.from(items).sort(function (a, b) {
-            var priceA = getPriceValue(a.innerText);
-            var priceB = getPriceValue(b.innerText);
-            return carrefourSortByPriceAsc ? priceA - priceB : priceB - priceA;
-        });
-        for (var i = 0; i < sortedItems.length; i++) {
-            ul.appendChild(sortedItems[i]);
+        .results {
+            width: 45%;
         }
-        carrefourSortByPriceAsc = !carrefourSortByPriceAsc;
-    }
 
-    function sortCarrefourResultsByName() {
-        var ul = document.getElementById("carrefour-results");
-        var items = ul.getElementsByTagName("li");
-        var sortedItems = Array.from(items).sort(function (a, b) {
-            var nameA = a.innerText.split(",")[0].trim();
-            var nameB = b.innerText.split(",")[0].trim();
-            return carrefourSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-        });
-        for (var i = 0; i < sortedItems.length; i++) {
-            ul.appendChild(sortedItems[i]);
+        .product-list {
+            padding: 0;
         }
-        carrefourSortByNameAsc = !carrefourSortByNameAsc;
-    }
 
-    function sortCarrefourResultsByQuantity() {
-        var ul = document.getElementById("carrefour-results");
-        var items = ul.getElementsByTagName("li");
-        var sortedItems = Array.from(items).sort(function (a, b) {
-            var quantityA = getQuantityValue(a.innerText);
-            var quantityB = getQuantityValue(b.innerText);
-            return carrefourSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
-        });
-        for (var i = 0; i < sortedItems.length; i++) {
-            ul.appendChild(sortedItems[i]);
+            .product-list li {
+                margin-bottom: 10px;
+            }
+
+        .no-results {
+            color: red;
         }
-        carrefourSortByQuantityAsc = !carrefourSortByQuantityAsc;
-    }
 
-    function sortKauflandResultsByPrice() {
-        var ul = document.getElementById("kaufland-results");
-        var items = ul.getElementsByTagName("li");
-        var sortedItems = Array.from(items).sort(function (a, b) {
-            var priceA = getPriceValue(a.innerText);
-            var priceB = getPriceValue(b.innerText);
-            return kauflandSortByPriceAsc ? priceA - priceB : priceB - priceA;
-        });
-        for (var i = 0; i < sortedItems.length; i++) {
-            ul.appendChild(sortedItems[i]);
+        button:active {
+            background-color: #ccc;
         }
-        kauflandSortByPriceAsc = !kauflandSortByPriceAsc;
-    }
 
-    function sortKauflandResultsByName() {
-        var ul = document.getElementById("kaufland-results");
-        var items = ul.getElementsByTagName("li");
-        var sortedItems = Array.from(items).sort(function (a, b) {
-            var nameA = a.innerText.split(",")[0].trim();
-            var nameB = b.innerText.split(",")[0].trim();
-            return kauflandSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
-        });
-        for (var i = 0; i < sortedItems.length; i++) {
-            ul.appendChild(sortedItems[i]);
+    </style>
+
+    <!-- JavaScript Functions -->
+    <script>
+        // Function to apply filters
+        function applyFilters() {
+            // Get filter values
+            var quantityMin = parseFloat(document.getElementById("quantityMin").value);
+            var quantityMax = parseFloat(document.getElementById("quantityMax").value);
+            var priceMin = parseFloat(document.getElementById("priceMin").value);
+            var priceMax = parseFloat(document.getElementById("priceMax").value);
+
+            // Loop through Carrefour items and hide/show based on filter
+            var carrefourItems = document.querySelectorAll('.carrefour-item');
+            carrefourItems.forEach(function (item) {
+                var quantity = parseFloat(item.getAttribute('data-quantity'));
+                var price = parseFloat(item.getAttribute('data-price'));
+                if (quantity >= quantityMin && quantity <= quantityMax && price >= priceMin && price <= priceMax) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Loop through Kaufland items and hide/show based on filter
+            var kauflandItems = document.querySelectorAll('.kaufland-item');
+            kauflandItems.forEach(function (item) {
+                var quantity = parseFloat(item.getAttribute('data-quantity'));
+                var price = parseFloat(item.getAttribute('data-price'));
+                if (quantity >= quantityMin && quantity <= quantityMax && price >= priceMin && price <= priceMax) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
-        kauflandSortByNameAsc = !kauflandSortByNameAsc;
-    }
 
-    function sortKauflandResultsByQuantity() {
-        var ul = document.getElementById("kaufland-results");
-        var items = ul.getElementsByTagName("li");
-        var sortedItems = Array.from(items).sort(function (a, b) {
-            var quantityA = getQuantityValue(a.innerText);
-            var quantityB = getQuantityValue(b.innerText);
-            return kauflandSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
-        });
-        for (var i = 0; i < sortedItems.length; i++) {
-            ul.appendChild(sortedItems[i]);
+        // Function to extract price value from the string
+        function getPriceValue(itemText) {
+            // Use regular expression to extract all numbers (with or without commas)
+            var numbers = itemText.match(/\d+([.,]\d+)?/g);
+            // Return the last extracted number as the price value
+            return parseFloat(numbers[numbers.length - 1].replace(",", "."));
         }
-        kauflandSortByQuantityAsc = !kauflandSortByQuantityAsc;
-    }
 
-    // Function to extract price value from the string
-    function getPriceValue(itemText) {
-        // Use regular expression to extract all numbers (with or without commas)
-        var numbers = itemText.match(/\d+([.,]\d+)?/g);
-        // Return the last extracted number as the price value
-        return parseFloat(numbers[numbers.length - 1].replace(",", "."));
-    }
+        // Function to extract quantity value from the string
+        function getQuantityValue(itemText) {
+            // Use regular expression to extract all numbers (with or without commas)
+            var numbers = itemText.match(/\d+([.,]\d+)?/g);
+            // Return the second-to-last extracted number as the quantity value
+            return parseFloat(numbers[numbers.length - 2].replace(",", "."));
+        }
 
-    // Function to extract quantity value from the string
-    function getQuantityValue(itemText) {
-        // Use regular expression to extract all numbers (with or without commas)
-        var numbers = itemText.match(/\d+([.,]\d+)?/g);
-        // Return the second-to-last extracted number as the quantity value
-        return parseFloat(numbers[numbers.length - 2].replace(",", "."));
-    }
+                // Sort functions for Carrefour results
+                // ...
+
+                // Sort functions for Kaufland results
+                // ...
+        var carrefourSortByPriceAsc = true;
+        var carrefourSortByNameAsc = true;
+        var carrefourSortByQuantityAsc = true;
+
+        function sortCarrefourResultsByPrice() {
+            var ul = document.getElementById("carrefour-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var priceA = getPriceValue(a.innerText);
+                var priceB = getPriceValue(b.innerText);
+                return carrefourSortByPriceAsc ? priceA - priceB : priceB - priceA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            carrefourSortByPriceAsc = !carrefourSortByPriceAsc;
+        }
+
+        function sortCarrefourResultsByName() {
+            var ul = document.getElementById("carrefour-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var nameA = a.innerText.split(",")[0].trim();
+                var nameB = b.innerText.split(",")[0].trim();
+                return carrefourSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            carrefourSortByNameAsc = !carrefourSortByNameAsc;
+        }
+
+        function sortCarrefourResultsByQuantity() {
+            var ul = document.getElementById("carrefour-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var quantityA = getQuantityValue(a.innerText);
+                var quantityB = getQuantityValue(b.innerText);
+                return carrefourSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            carrefourSortByQuantityAsc = !carrefourSortByQuantityAsc;
+        }
+
+        // Sort functions for Kaufland results
+        var kauflandSortByPriceAsc = true;
+        var kauflandSortByNameAsc = true;
+        var kauflandSortByQuantityAsc = true;
+
+        function sortKauflandResultsByPrice() {
+            var ul = document.getElementById("kaufland-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var priceA = getPriceValue(a.innerText);
+                var priceB = getPriceValue(b.innerText);
+                return kauflandSortByPriceAsc ? priceA - priceB : priceB - priceA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            kauflandSortByPriceAsc = !kauflandSortByPriceAsc;
+        }
+
+        function sortKauflandResultsByName() {
+            var ul = document.getElementById("kaufland-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var nameA = a.innerText.split(",")[0].trim();
+                var nameB = b.innerText.split(",")[0].trim();
+                return kauflandSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            kauflandSortByNameAsc = !kauflandSortByNameAsc;
+        }
+
+        function sortKauflandResultsByQuantity() {
+            var ul = document.getElementById("kaufland-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var quantityA = getQuantityValue(a.innerText);
+                var quantityB = getQuantityValue(b.innerText);
+                return kauflandSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            kauflandSortByQuantityAsc = !kauflandSortByQuantityAsc;
+        }
 
 
-</script>
+    </script>
+</body>
+</html>

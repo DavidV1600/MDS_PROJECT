@@ -2,16 +2,10 @@
 <html>
 <head>
     <title>Google Maps Example</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB1gTiBHMbS3O3WHTVhvZ0vVmNGwAZIQDw&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB1gTiBHMbS3O3WHTVhvZ0vVmNGwAZIQDw&amp;librarie&libraries=places"></script>
 </head>
 <body>
-    <div>
-        <!-- Search input -->
-        <input id="searchInput" type="text" placeholder="Search for a location">
-
-        <!-- Map container -->
-        <div id="map" style="height: 400px;"></div>
-    </div>
+    <div id="map" style="height: 400px;"></div>
 
     <script>
         let map;
@@ -19,7 +13,6 @@
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: -34.397, lng: 150.644 }, // Default center
                 zoom: 15,
                 mapTypeControl: false
             });
@@ -42,12 +35,9 @@
                         }
                     });
 
-                    const searchBox = new google.maps.places.SearchBox(document.getElementById('searchInput'));
-                    map.controls[google.maps.ControlPosition.TOP_LEFT].push(document.getElementById('searchInput'));
-
-                    searchBox.addListener('places_changed', function () {
-                        searchPlaces(searchBox);
-                    });
+                    // Perform searches for Carrefour and Kaufland
+                    searchPlaces("Carrefour", userLocation);
+                    searchPlaces("Kaufland", userLocation);
                 }, function () {
                     handleLocationError(true, map.getCenter());
                 });
@@ -57,17 +47,22 @@
             }
         }
 
-        function searchPlaces(searchBox) {
-            const places = searchBox.getPlaces();
-            if (places.length == 0) return;
-
-            // Clear out the old markers
-            markersArray.forEach(function (marker) {
-                marker.setMap(null);
+        function searchPlaces(query, location) {
+            const service = new google.maps.places.PlacesService(map);
+            service.textSearch({
+                query: query,
+                location: location,
+                radius: 5000 // Search within 5km radius
+            }, function (results, status) {
+                if (status === google.maps.places.PlacesServiceStatus.OK) {
+                    createMarkers(results);
+                } else {
+                    console.error('Places search failed:', status);
+                }
             });
-            markersArray = [];
+        }
 
-            // For each place, get the icon, name and location
+        function createMarkers(places) {
             const bounds = new google.maps.LatLngBounds();
             places.forEach(function (place) {
                 if (!place.geometry) {
@@ -82,17 +77,32 @@
                     position: place.geometry.location
                 });
 
-                // Optional: Include more details by querying place details here
+                marker.addListener('click', function () {
+                    const infowindow = new google.maps.InfoWindow({
+                        content: '<strong>' + place.name + '</strong><br>' +
+                            'Address: ' + place.formatted_address + '<br>' +
+                            'Schedule: ' + getSchedule(place)
+                    });
+                    infowindow.open(map, marker);
+                });
+
                 markersArray.push(marker);
 
-                if (place.geometry.viewport) {
-                    // Only geocodes have viewport
-                    bounds.union(place.geometry.viewport);
-                } else {
-                    bounds.extend(place.geometry.location);
-                }
+                bounds.extend(place.geometry.location);
             });
             map.fitBounds(bounds);
+        }
+
+        function getSchedule(place) {
+            let schedule = '';
+            if (place.opening_hours && place.opening_hours.weekday_text) {
+                place.opening_hours.weekday_text.forEach(function (day) {
+                    schedule += day + '<br>';
+                });
+            } else {
+                schedule = 'Schedule not available';
+            }
+            return schedule;
         }
 
         function handleLocationError(browserHasGeolocation, pos) {
