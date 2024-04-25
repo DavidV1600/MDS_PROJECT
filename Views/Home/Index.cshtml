@@ -75,6 +75,28 @@
             }
         </div>
     </div>
+    <div class="results">
+        <h2>Auchan</h2>
+        @if (Model.AuchanResults != null && Model.AuchanResults.Any())
+        {
+            <div>
+                <button onclick="sortAuchanResultsByPrice()">Sort by Price</button>
+                <button onclick="sortAuchanResultsByName()">Sort by Name</button>
+                <button onclick="sortAuchanResultsByQuantity()">Sort by Quantity</button>
+            </div>
+            <ul id="auchan-results" class="product-list">
+                @foreach (var item in Model.AuchanResults)
+                {
+                    <li class="auchan-item" data-quantity="@item.Quantity" data-price="@item.Price">@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="no-results">Nu s-au găsit rezultate pentru Auchan.</p>
+        }
+    </div>
+
 
     <!-- CSS Styling -->
     <style>
@@ -253,6 +275,85 @@
             }
             kauflandSortByQuantityAsc = !kauflandSortByQuantityAsc;
         }
+        var auchanSortByPriceAsc = true;
+        var auchanSortByNameAsc = true;
+        var auchanSortByQuantityAsc = true;
+
+        function sortAuchanResultsByPrice() {
+            var ul = document.getElementById("auchan-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var priceA = getPriceValue(a.innerText);
+                var priceB = getPriceValue(b.innerText);
+                return auchanSortByPriceAsc ? priceA - priceB : priceB - priceA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            auchanSortByPriceAsc = !auchanSortByPriceAsc;
+        }
+
+        function sortAuchanResultsByName() {
+            var ul = document.getElementById("auchan-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var nameA = a.innerText.split(",")[0].trim();
+                var nameB = b.innerText.split(",")[0].trim();
+                return auchanSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            auchanSortByNameAsc = !auchanSortByNameAsc;
+        }
+
+        function sortAuchanResultsByQuantity() {
+            var ul = document.getElementById("auchan-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var quantityA = getQuantityValue(a.innerText);
+                var quantityB = getQuantityValue(b.innerText);
+                return auchanSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            auchanSortByQuantityAsc = !auchanSortByQuantityAsc;
+        }
+
+        function applyFilters() {
+            var quantityMin = parseFloat(document.getElementById("quantityMin").value);
+            var quantityMax = parseFloat(document.getElementById("quantityMax").value);
+            var priceMin = parseFloat(document.getElementById("priceMin").value);
+            var priceMax = parseFloat(document.getElementById("priceMax").value);
+
+            var auchanItems = document.querySelectorAll('.auchan-item');
+            auchanItems.forEach(function (item) {
+                var quantity = parseFloat(item.getAttribute('data-quantity'));
+                var price = parseFloat(item.getAttribute('data-price'));
+                if (quantity >= quantityMin && quantity <= quantityMax && price >= priceMin && price <= priceMax) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            if (localStorage.getItem('searchData')) {
+                var searchData = JSON.parse(localStorage.getItem('searchData'));
+
+                // Restaurează valorile în formular
+                document.getElementsByName("query")[0].value = searchData.query;
+                document.getElementById("quantityMin").value = searchData.quantityMin;
+                document.getElementById("quantityMax").value = searchData.quantityMax;
+                document.getElementById("priceMin").value = searchData.priceMin;
+                document.getElementById("priceMax").value = searchData.priceMax;
+
+                // Opțional: Poți chiar aplica din nou filtrele la încărcarea paginii
+                applyFilters();
+            }
+        });
+
 
 
     </script>

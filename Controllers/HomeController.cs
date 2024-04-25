@@ -13,6 +13,7 @@ namespace MDS_PROJECT.Controllers
         {
             public List<ItemResult> CarrefourResults { get; set; } = new List<ItemResult>();
             public List<ItemResult> KauflandResults { get; set; } = new List<ItemResult>();
+            public List<ItemResult> AuchanResults { get; set; } = new List<ItemResult>();
         }
 
         public class ItemResult
@@ -44,12 +45,14 @@ namespace MDS_PROJECT.Controllers
             // Aici, vom efectua ambele căutări simultan
             var carrefourTask = GetSearchResult("Carrefour.py", query);
             var kauflandTask = GetSearchResult("Kaufland.py", query);
-            await Task.WhenAll(carrefourTask, kauflandTask);
+            var auchanTask = GetSearchResult("Auchan.py", query);  // New Auchan Task
+            await Task.WhenAll(carrefourTask, kauflandTask, auchanTask); // Await all tasks
 
             var viewModel = new SearchViewModel
             {
                 CarrefourResults = ParseResults(carrefourTask.Result), // Asigură-te că ParseResults poate gestiona rezultatele goale/nule
-                KauflandResults = ParseKauflandResults(kauflandTask.Result) // Presupunând că și Kaufland va avea o listă de ItemResult
+                KauflandResults = ParseKauflandResults(kauflandTask.Result), // Presupunând că și Kaufland va avea o listă de ItemResult
+                AuchanResults = ParseAuchanResults(auchanTask.Result)
             };
 
             return View("Index", viewModel);
@@ -128,6 +131,37 @@ namespace MDS_PROJECT.Controllers
 
             return kauflandResults;
         }
+        private List<ItemResult> ParseAuchanResults(string results)
+        {
+            List<ItemResult> auchanResults = new List<ItemResult>();
+            var entries = results.Split(new string[] { "--------------------------------" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var entry in entries)
+            {
+                // This pattern assumes that the item name is on one line, quantity and measure on the next line, and price on its own line.
+                string pattern = @"(?m)^\D+(?=\d{2}\.\d{2}\.\d{2})\n^(.+?),\s*(\d+)\s*l\n^In stoc\n^(\d+,\d+)\s*lei$";
+                Match match = Regex.Match(entry, pattern);
+
+                if (match.Success)
+                {
+                    string itemName = match.Groups[1].Value.Trim();
+                    string quantity = match.Groups[2].Value.Trim();
+                    string price = match.Groups[3].Value.Trim().Replace(',', '.');
+
+                    auchanResults.Add(new ItemResult
+                    {
+                        ItemName = itemName,
+                        Quantity = quantity,
+                        MeasureQuantity = "l", // Assuming the measure is always 'l' for liters
+                        Price = price + " Lei"
+                    });
+                }
+            }
+
+            return auchanResults;
+        }
+
+
 
 
 
