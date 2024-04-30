@@ -2,20 +2,37 @@
 <html>
 <head>
     <title>Google Maps Example</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB1gTiBHMbS3O3WHTVhvZ0vVmNGwAZIQDw&amp;librarie&libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB1gTiBHMbS3O3WHTVhvZ0vVmNGwAZIQDw&amp&libraries=places,geometry"></script>
 </head>
 <body>
     <div id="map" style="height: 400px;"></div>
+    <div>
+        <label for="mode">Choose mode of transportation:</label>
+        <select id="mode">
+            <option value="DRIVING">Driving</option>
+            <option value="WALKING">Walking</option>
+            <option value="BICYCLING">Bicycling</option>
+            <option value="TRANSIT">Transit</option>
+        </select>
+        <div id="info"></div>
+    </div>
 
     <script>
         let map;
-        let markersArray = [];
+        let userLocationMarker;
+        let directionsService;
+        let directionsRenderer;
+        let markersArray = []; // Define markersArray
 
         function initMap() {
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 15,
                 mapTypeControl: false
             });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer();
+            directionsRenderer.setMap(map);
 
             // Try HTML5 geolocation
             if (navigator.geolocation) {
@@ -26,7 +43,7 @@
                     };
 
                     map.setCenter(userLocation);
-                    new google.maps.Marker({
+                    userLocationMarker = new google.maps.Marker({
                         position: userLocation,
                         map: map,
                         title: 'Your Location',
@@ -35,7 +52,7 @@
                         }
                     });
 
-                    // Perform searches for Carrefour and Kaufland
+                    // Perform search for Carrefour and Kaufland
                     searchPlaces("Carrefour", userLocation);
                     searchPlaces("Kaufland", userLocation);
                 }, function () {
@@ -45,64 +62,85 @@
                 // Browser doesn't support Geolocation
                 handleLocationError(false, map.getCenter());
             }
-        }
 
-        function searchPlaces(query, location) {
-            const service = new google.maps.places.PlacesService(map);
-            service.textSearch({
-                query: query,
-                location: location,
-                radius: 5000 // Search within 5km radius
-            }, function (results, status) {
-                if (status === google.maps.places.PlacesServiceStatus.OK) {
-                    createMarkers(results);
-                } else {
-                    console.error('Places search failed:', status);
-                }
+            document.getElementById('mode').addEventListener('change', function () {
+                calculateAndDisplayRoute();
             });
         }
 
-        function createMarkers(places) {
-            const bounds = new google.maps.LatLngBounds();
-            places.forEach(function (place) {
-                if (!place.geometry) {
-                    console.log("Returned place contains no geometry");
-                    return;
-                }
-
-                // Create a marker for each place
-                const marker = new google.maps.Marker({
-                    map: map,
-                    title: place.name,
-                    position: place.geometry.location
-                });
-
-                marker.addListener('click', function () {
-                    const infowindow = new google.maps.InfoWindow({
-                        content: '<strong>' + place.name + '</strong><br>' +
-                            'Address: ' + place.formatted_address + '<br>' +
-                            'Schedule: ' + getSchedule(place)
-                    });
-                    infowindow.open(map, marker);
-                });
-
-                markersArray.push(marker);
-
-                bounds.extend(place.geometry.location);
-            });
-            map.fitBounds(bounds);
-        }
-
-        function getSchedule(place) {
-            let schedule = '';
-            if (place.opening_hours && place.opening_hours.weekday_text) {
-                place.opening_hours.weekday_text.forEach(function (day) {
-                    schedule += day + '<br>';
-                });
-            } else {
-                schedule = 'Schedule not available';
+function searchPlaces(query, userLocation) {
+    const service = new google.maps.places.PlacesService(map);
+    service.textSearch({
+        query: query,
+        location: userLocation,
+        radius: 5000 // Search within 5km radius
+    }, function (results, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+            // Filter results based on query
+            const filteredResults = results.filter(result => result.name.toLowerCase().includes(query.toLowerCase()));
+            // Find the closest market of the specified type
+            const closestMarket = findClosestMarket(userLocation, filteredResults);
+            if (closestMarket) {
+                createMarkerAndCalculateRoute(closestMarket);
             }
-            return schedule;
+        } else {
+            console.error('Places search failed:', status);
+        }
+    });
+}
+
+
+        function findClosestMarket(userLocation, markets) {
+            let closestMarket = null;
+            let shortestDistance = Number.MAX_VALUE;
+
+            markets.forEach(function (market) {
+                const distance = google.maps.geometry.spherical.computeDistanceBetween(userLocation, market.geometry.location);
+                if (distance < shortestDistance) {
+                    closestMarket = market;
+                    shortestDistance = distance;
+                }
+            });
+
+            return closestMarket;
+        }
+
+        function createMarkerAndCalculateRoute(market) {
+            const marker = new google.maps.Marker({
+                map: map,
+                title: market.name,
+                position: market.geometry.location
+            });
+
+            markersArray.push(marker);
+
+            calculateAndDisplayRoute(marker.getPosition());
+        }
+
+        function calculateAndDisplayRoute(destination) {
+            const selectedMode = document.getElementById('mode').value;
+            const start = userLocationMarker.getPosition();
+            const request = {
+                origin: start,
+                destination: destination || markersArray[0].getPosition(), // If destination is not provided, use the first marker as destination
+                travelMode: google.maps.TravelMode[selectedMode]
+            };
+            directionsService.route(request, function (result, status) {
+                if (status == 'OK') {
+                    directionsRenderer.setDirections(result);
+                    displayRouteInfo(result);
+                } else {
+                    console.error('Directions request failed:', status);
+                }
+            });
+        }
+
+        function displayRouteInfo(result) {
+            const route = result.routes[0];
+            const infoPanel = document.getElementById('info');
+            const distance = route.legs[0].distance.text;
+            const duration = route.legs[0].duration.text;
+            infoPanel.innerHTML = 'Distance: ' + distance + '<br>Duration: ' + duration;
         }
 
         function handleLocationError(browserHasGeolocation, pos) {
