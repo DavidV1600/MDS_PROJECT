@@ -5,7 +5,7 @@
 <html>
 <head>
     <title>Google Maps Example</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&amp;libraries=places"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB1gTiBHMbS3O3WHTVhvZ0vVmNGwAZIQDw&amp;libraries=places"></script>
 </head>
 <body>
     <!-- HTML Form -->
@@ -32,7 +32,7 @@
     <!-- Results Section -->
     <div class="results-container">
         <div class="results">
-            <h2>Carrefour</h2>
+            <h2><a href="/Maps?store=Carrefour" onclick="redirectToMaps('Carrefour')">Carrefour</a></h2>
             @if (Model.CarrefourResults != null && Model.CarrefourResults.Any())
             {
                 <div>
@@ -54,7 +54,7 @@
         </div>
 
         <div class="results">
-            <h2>Kaufland</h2>
+            <h2><a href="/Maps?store=Kaufland" onclick="redirectToMaps('Kaufland')">Kaufland</a></h2>
             @if (Model.KauflandResults != null && Model.KauflandResults.Any())
             {
                 <div>
@@ -107,6 +107,11 @@
 
     <!-- JavaScript Functions -->
     <script>
+        function redirectToMaps(store) {
+            // Redirect to the map page with the selected store as a query parameter
+            window.location.href = "/Maps?store=" + store;
+        }
+
         // Function to apply filters
         function applyFilters() {
             // Get filter values
