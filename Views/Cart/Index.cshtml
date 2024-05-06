@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Shopping Cart</title>
+</head>
+<body>
+    <h1>Shopping Cart</h1>
+
+    <form id="productForm">
+        <label for="productName">Product Name:</label>
+        <input type="text" id="productName" placeholder="Enter product name">
+
+        <label for="productQuantity">Quantity:</label>
+        <input type="number" id="productQuantity" placeholder="Enter quantity">
+
+        <button type="button" onclick="addToCart()">Add to Cart</button>
+        <button type="button">Display Shop Prices</button>
+    </form>
+
+    <h2>Cart</h2>
+    <ul id="cartItems"></ul>
+
+    <script>
+        function addToCart() {
+            // Get product name and quantity
+            var productName = document.getElementById("productName").value.trim();
+            var productQuantity = parseInt(document.getElementById("productQuantity").value);
+
+            // Validate inputs
+            if (!productName || isNaN(productQuantity) || productQuantity <= 0) {
+                alert("Please enter a valid product name and quantity.");
+                return;
+            }
+
+            // Create a new list item
+            var listItem = document.createElement("li");
+            listItem.textContent = productName + " - Quantity: " + productQuantity;
+
+            // Add the list item to the cart
+            document.getElementById("cartItems").appendChild(listItem);
+
+            // Clear the input fields
+            document.getElementById("productName").value = "";
+            document.getElementById("productQuantity").value = "";
+        }
+    </script>
+</body>
+</html>
