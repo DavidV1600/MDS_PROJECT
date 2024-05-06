@@ -66,8 +66,17 @@
     <form asp-controller="Product" asp-action="SearchBoth" method="post">
         <input type="text" name="query" placeholder="Caută un produs...">
         <input type="number" name="quantity" placeholder="0">
-        <button type="submit" onlclick="applyFilters">Caută</button>
+        <label for="productUnit">Unit:</label>
+        <select id="productUnit">
+            <option value="gram">gram</option>
+            <option value="liter">liter</option>
+            <option value="piece">piece</option>
+        </select>
+        <label for="exactItemName">Exact Item Name:</label>
+        <input type="checkbox" name="exactItemName" value="True">
+        <button type="submit" onclick="applyFilters()">Caută</button>
     </form>
+
 
     <!-- Quantity and Price Range Inputs -->
     <div>
@@ -133,6 +142,7 @@
 
     <!-- JavaScript Functions -->
     <script>
+
         function redirectToMaps(store) {
             // Redirect to the map page with the selected store as a query parameter
             window.location.href = "/Maps?store=" + store;
@@ -146,14 +156,14 @@
             var priceMin = parseFloat(document.getElementById("priceMin").value);
             var priceMax = parseFloat(document.getElementById("priceMax").value);
 
-            var quantityExactPrice = parseFloat(document.getElementsByName("quantity").value);
+            // var quantityExactPrice = parseFloat(document.getElementsByName("quantity")[0].value);
 
-            if(quantityExactPrice > 0)
-            {
-                quantityMin = quantityExactPrice;
-                quantityMax = quantityExactPrice;
+            // if(quantityExactPrice > 0)
+            // {
+            //     quantityMin = quantityExactPrice;
+            //     quantityMax = quantityExactPrice;
 
-            }
+            // }
 
             // Loop through Carrefour items and hide/show based on filter
             var carrefourItems = document.querySelectorAll('.carrefour-item');

@@ -13,6 +13,13 @@
         <label for="productQuantity">Quantity:</label>
         <input type="number" id="productQuantity" placeholder="Enter quantity">
 
+        <label for="productUnit">Unit:</label>
+        <select id="productUnit">
+            <option value="gram">gram</option>
+            <option value="liter">liter</option>
+            <option value="piece">piece</option>
+        </select>
+
         <button type="button" onclick="addToCart()">Add to Cart</button>
         <button type="button">Display Shop Prices</button>
     </form>
@@ -22,9 +29,10 @@
 
     <script>
         function addToCart() {
-            // Get product name and quantity
+            // Get product name, quantity, and unit
             var productName = document.getElementById("productName").value.trim();
             var productQuantity = parseInt(document.getElementById("productQuantity").value);
+            var productUnit = document.getElementById("productUnit").value;
 
             // Validate inputs
             if (!productName || isNaN(productQuantity) || productQuantity <= 0) {
@@ -34,7 +42,7 @@
 
             // Create a new list item
             var listItem = document.createElement("li");
-            listItem.textContent = productName + " - Quantity: " + productQuantity;
+            listItem.textContent = productName + " - Quantity: " + productQuantity + " " + productUnit;
 
             // Add the list item to the cart
             document.getElementById("cartItems").appendChild(listItem);
