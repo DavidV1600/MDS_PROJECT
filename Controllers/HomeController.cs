@@ -1,11 +1,16 @@
-﻿using MDS_PROJECT.Models;
+﻿using MDS_PROJECT.Data;
+using MDS_PROJECT.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using static MDS_PROJECT.Controllers.HomeController;
 
 namespace MDS_PROJECT.Controllers
 {
+  
     public class HomeController : Controller
     {
         // Definițiile modelelor de date pot fi mutate în fișiere separate pentru claritate, dar funcționează și aici.
@@ -21,18 +26,38 @@ namespace MDS_PROJECT.Controllers
             public string Quantity { get; set; }
             public string MeasureQuantity { get; set; }
             public string Price { get; set; }
+            public string Store {  get; set; }
         }
 
-        private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext db;
+
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        private readonly RoleManager<IdentityRole> _roleManager;
+
+        //private readonly ILogger<ProductsController> _logger;
+
         private readonly IConfiguration _configuration;
 
-		public HomeController(ILogger<HomeController> logger, IConfiguration configuration)
+
+
+
+        public HomeController(
+        ApplicationDbContext context,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole> roleManager,
+        IConfiguration configuration// Adaugă acest parametru
+        //ILogger<ProductsController> logger
+            ) // E posibil să ai nevoie să adaugi și logger-ul dacă îl folosești
         {
-            _logger = logger;
-            _configuration = configuration;
+            db = context;
+            _userManager = userManager;
+            _roleManager = roleManager;
+            _configuration = configuration; // Inițializează _configuration
+            //_logger = logger; // Inițializează _logger dacă este necesar
         }
 
-        // Eliminați unul dintre atributele [HttpPost] redundante
+
         [HttpPost]
         public async Task<IActionResult> SearchBoth(string query)
         {
@@ -51,7 +76,28 @@ namespace MDS_PROJECT.Controllers
                 CarrefourResults = ParseResults(carrefourTask.Result), // Asigură-te că ParseResults poate gestiona rezultatele goale/nule
                 KauflandResults = ParseKauflandResults(kauflandTask.Result) // Presupunând că și Kaufland va avea o listă de ItemResult
             };
+            foreach (var item in viewModel.CarrefourResults.Concat(viewModel.KauflandResults))
+            {
+                // Conversia de la ItemResult la Product
+                var product = new Product
+                {
+                    ItemName = item.ItemName,
+                    Quantity = item.Quantity,
+                    MeasureQuantity = item.MeasureQuantity,
+                    Price = item.Price,
+                    Store = item.Store
+                };
 
+                // Adaugă produsul în baza de date dacă nu există deja
+                if (!db.Products.Any(p => p.ItemName == product.ItemName && p.Quantity == product.Quantity))
+                {
+                    db.Products.Add(product);
+                }
+            }
+
+            await db.SaveChangesAsync();
+
+            await db.SaveChangesAsync();
             return View("Index", viewModel);
         }
 
@@ -90,7 +136,8 @@ namespace MDS_PROJECT.Controllers
                 ItemName = m.Groups[1].Value.Trim(),
                 Quantity = m.Groups[2].Value.Trim(),
                 MeasureQuantity = m.Groups[3].Value.Trim(),
-                Price = m.Groups[4].Value.Trim()
+                Price = m.Groups[4].Value.Trim(),
+                Store = "Carrefour"
             }).ToList();
             
         }
@@ -120,7 +167,8 @@ namespace MDS_PROJECT.Controllers
                             ItemName = itemName,
                             Quantity = quantitySplit[0],
                             MeasureQuantity = quantitySplit[1],
-                            Price = price + " Lei" // assuming currency is always Lei as per Carrefour results
+                            Price = price + " Lei", // assuming currency is always Lei as per Carrefour results
+                            Store = "Kaufland"
                         });
                     }
                 }
