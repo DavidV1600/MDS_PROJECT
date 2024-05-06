@@ -6,10 +6,26 @@ namespace MDS_PROJECT.Models
     {
         [Key]
         public int Id { get; set; }
-        public string Title { get; set; }
-        public string Subtitle { get; set; }
-        public int Price { get; set; }
-        public int Quantity { get; set; }
+        public string ItemName { get; set; }
+        public string Quantity { get; set; }
+        public string MeasureQuantity { get; set; }
+        public string Price { get; set; }
+
+        public string Store { get; set; }
+
+        public string Searched { get; set; }
+
+        public Product() { }
+
+        public Product(Product product)
+        {
+            ItemName = product.ItemName;
+            Quantity = product.Quantity;
+            MeasureQuantity = product.MeasureQuantity;
+            Price = product.Price;
+            Store = product.Store;
+            Searched = product.Searched;
+        }
 
     }
 }
