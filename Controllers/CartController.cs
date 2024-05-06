@@ -2,7 +2,7 @@
 
 namespace MDS_PROJECT.Controllers
 {
-    public class Cart : Controller
+    public class CartController : Controller
     {
         public IActionResult Index()
         {
