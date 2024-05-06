@@ -66,6 +66,12 @@
     <form asp-controller="Product" asp-action="SearchBoth" method="post">
         <input type="text" name="query" placeholder="Caută un produs...">
         <input type="number" name="quantity" placeholder="0">
+        <label for="productUnit">Unit:</label>
+        <select id="productUnit">
+            <option value="gram">gram</option>
+            <option value="liter">liter</option>
+            <option value="piece">piece</option>
+        </select>
         <button type="submit" onlclick="applyFilters">Caută</button>
     </form>
 
