@@ -34,16 +34,29 @@ namespace MDS_PROJECT.Controllers
 
         // Eliminați unul dintre atributele [HttpPost] redundante
         [HttpPost]
-        public async Task<IActionResult> SearchBoth(string query)
+        public async Task<IActionResult> SearchBoth(string query, bool exactItemName)
         {
+            Console.WriteLine(exactItemName);
             if (string.IsNullOrEmpty(query))
             {
                 return View("Index", new SearchViewModel()); // Returnează un model gol dacă interogarea este nulă sau goală
             }
 
             // Aici, vom efectua ambele căutări simultan
-            var carrefourTask = GetSearchResult("Carrefour.py", query);
-            var kauflandTask = GetSearchResult("Kaufland.py", query);
+            Task<string> carrefourTask;
+            Task<string> kauflandTask;
+
+            if (exactItemName)
+            {
+                carrefourTask = GetSearchResult("CarrefourExact.py", query);
+                kauflandTask = GetSearchResult("KauflandExact.py", query);
+            }
+            else
+            {
+                carrefourTask = GetSearchResult("Carrefour.py", query);
+                kauflandTask = GetSearchResult("Kaufland.py", query);
+            }
+
             await Task.WhenAll(carrefourTask, kauflandTask);
 
             var viewModel = new SearchViewModel
