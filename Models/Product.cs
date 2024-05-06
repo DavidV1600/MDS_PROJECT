@@ -2,6 +2,7 @@
 
 namespace MDS_PROJECT.Models
 {
+    public class Product
     {
         [Key]
         public int Id { get; set; }
@@ -10,14 +11,5 @@ namespace MDS_PROJECT.Models
         public int Price { get; set; }
         public int Quantity { get; set; }
 
-                // Pass the list of href link texts to the view
-                return View(hrefTexts);
-            }
-            else
-            {
-                // Handle failed HTTP request
-                return Content($"Failed to retrieve the search results page: {searchResponse.StatusCode}");
-            }
-        }
     }
 }
