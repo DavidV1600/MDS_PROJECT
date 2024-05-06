@@ -27,6 +27,18 @@ namespace MDS_PROJECT.Controllers
             public string MeasureQuantity { get; set; }
             public string Price { get; set; }
             public string Store {  get; set; }
+            public string Searched {  get; set; }
+            public ItemResult() { }
+
+            public ItemResult(Product product)
+            {
+                ItemName = product.ItemName;
+                Quantity = product.Quantity;
+                MeasureQuantity = product.MeasureQuantity;
+                Price = product.Price;
+                Store = product.Store;
+                Searched = product.Searched;
+            }
         }
 
         private readonly ApplicationDbContext db;
@@ -65,7 +77,18 @@ namespace MDS_PROJECT.Controllers
             {
                 return View("Index", new SearchViewModel()); // Returnează un model gol dacă interogarea este nulă sau goală
             }
+            var existingProducts = db.Products.Where(p => p.Searched == query).ToList();
+            if (existingProducts.Any())
+            {
+                // Dacă produsele există deja, le convertim pentru ViewModel și le afișăm
+                var vieww = new SearchViewModel
+                {
+                    CarrefourResults = existingProducts.Where(p => p.Store == "Carrefour").Select(p => new ItemResult(p)).ToList(),
+                    KauflandResults = existingProducts.Where(p => p.Store == "Kaufland").Select(p => new ItemResult(p)).ToList()
+                };
 
+                return View("Index", vieww);
+            }
             // Aici, vom efectua ambele căutări simultan
             var carrefourTask = GetSearchResult("Carrefour.py", query);
             var kauflandTask = GetSearchResult("Kaufland.py", query);
@@ -85,7 +108,8 @@ namespace MDS_PROJECT.Controllers
                     Quantity = item.Quantity,
                     MeasureQuantity = item.MeasureQuantity,
                     Price = item.Price,
-                    Store = item.Store
+                    Store = item.Store,
+                    Searched = query
                 };
 
                 // Adaugă produsul în baza de date dacă nu există deja
