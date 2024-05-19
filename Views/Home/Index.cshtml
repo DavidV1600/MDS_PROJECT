@@ -5,18 +5,29 @@
 </head>
 <body>
     <div style="text-align: center; margin-top: 50px;">
+        <input type="text" id="userAddress" placeholder="Enter your address">
+        <button onclick="saveAddress()">Save Address</button>
+        <br><br>
         <button onclick="redirectToCart()">Creează Coș de Cumpărături</button>
         <button onclick="redirectToProduct()">Caută Prețuri Produs</button>
     </div>
 
     <script>
+        function saveAddress() {
+            var address = document.getElementById("userAddress").value;
+            if (address) {
+                localStorage.setItem("userAddress", address);
+                alert("Address saved!");
+            } else {
+                alert("Please enter an address.");
+            }
+        }
+
         function redirectToCart() {
-            // Redirect to the Cart page
             window.location.href = "/Cart";
         }
 
         function redirectToProduct() {
-            // Redirect to the Home page
             window.location.href = "/Product";
         }
     </script>
