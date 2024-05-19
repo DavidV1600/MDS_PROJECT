@@ -10,7 +10,6 @@ namespace MDS_PROJECT.Controllers
 {
     public class ProductController : Controller
     {
-        // Definițiile modelelor de date pot fi mutate în fișiere separate pentru claritate, dar funcționează și aici.
         public class SearchViewModel
         {
             public List<ItemResult> CarrefourResults { get; set; } = new List<ItemResult>();
@@ -25,6 +24,7 @@ namespace MDS_PROJECT.Controllers
             public string Price { get; set; }
             public string Store { get; set; }
             public string Searched { get; set; }
+
             public ItemResult() { }
 
             public ItemResult(Product product)
@@ -39,52 +39,42 @@ namespace MDS_PROJECT.Controllers
         }
 
         private readonly ApplicationDbContext db;
-
         private readonly UserManager<ApplicationUser> _userManager;
-
         private readonly RoleManager<IdentityRole> _roleManager;
-
-        //private readonly ILogger<ProductsController> _logger;
-
         private readonly IConfiguration _configuration;
 
         public ProductController(
-        ApplicationDbContext context,
-        UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole> roleManager,
-        IConfiguration configuration// Adaugă acest parametru
-        //ILogger<ProductsController> logger
-            ) // E posibil să ai nevoie să adaugi și logger-ul dacă îl folosești
+            ApplicationDbContext context,
+            UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration configuration)
         {
             db = context;
             _userManager = userManager;
             _roleManager = roleManager;
-            _configuration = configuration; // Inițializează _configuration
-            //_logger = logger; // Inițializează _logger dacă este necesar
+            _configuration = configuration;
         }
 
-        // Eliminați unul dintre atributele [HttpPost] redundante
         [HttpPost]
-        public async Task<IActionResult> SearchBoth(string query, bool exactItemName)
+        public async Task<IActionResult> SearchBoth(string query, int quantity, bool exactItemName)
         {
             if (string.IsNullOrEmpty(query))
             {
-                return View("Index", new SearchViewModel()); // Returnează un model gol dacă interogarea este nulă sau goală
+                return View("Index", new SearchViewModel());
             }
 
             var existingProducts = db.Products.Where(p => p.Searched == query).ToList();
             if (existingProducts.Any())
             {
-                // Dacă produsele există deja, le convertim pentru ViewModel și le afișăm
                 var view = new SearchViewModel
                 {
-                    CarrefourResults = existingProducts.Where(p => p.Store == "Carrefour").Select(p => new ItemResult(p)).ToList(),
-                    KauflandResults = existingProducts.Where(p => p.Store == "Kaufland").Select(p => new ItemResult(p)).ToList()
+                    CarrefourResults = existingProducts.Where(p => p.Store == "Carrefour" && (quantity == 0 || p.Quantity == quantity.ToString())).Select(p => new ItemResult(p)).ToList(),
+                    KauflandResults = existingProducts.Where(p => p.Store == "Kaufland" && (quantity == 0 || p.Quantity == quantity.ToString())).Select(p => new ItemResult(p)).ToList()
                 };
 
                 return View("Index", view);
             }
-            // Aici, vom efectua ambele căutări simultan
+
             Task<string> carrefourTask;
             Task<string> kauflandTask;
 
@@ -101,14 +91,23 @@ namespace MDS_PROJECT.Controllers
 
             await Task.WhenAll(carrefourTask, kauflandTask);
 
+            var carrefourResults = ParseResults(carrefourTask.Result);
+            var kauflandResults = ParseKauflandResults(kauflandTask.Result);
+
+            if (quantity > 0)
+            {
+                carrefourResults = carrefourResults.Where(p => p.Quantity == quantity.ToString()).ToList();
+                kauflandResults = kauflandResults.Where(p => p.Quantity == quantity.ToString()).ToList();
+            }
+
             var viewModel = new SearchViewModel
             {
-                CarrefourResults = ParseResults(carrefourTask.Result), // Asigură-te că ParseResults poate gestiona rezultatele goale/nule
-                KauflandResults = ParseKauflandResults(kauflandTask.Result) // Presupunând că și Kaufland va avea o listă de ItemResult
+                CarrefourResults = carrefourResults,
+                KauflandResults = kauflandResults
             };
+
             foreach (var item in viewModel.CarrefourResults.Concat(viewModel.KauflandResults))
             {
-                // Conversia de la ItemResult la Product
                 var product = new Product
                 {
                     ItemName = item.ItemName,
@@ -119,7 +118,6 @@ namespace MDS_PROJECT.Controllers
                     Searched = query
                 };
 
-                // Adaugă produsul în baza de date dacă nu există deja
                 if (!db.Products.Any(p => p.ItemName == product.ItemName && p.Quantity == product.Quantity))
                 {
                     db.Products.Add(product);
@@ -131,20 +129,19 @@ namespace MDS_PROJECT.Controllers
             return View("Index", viewModel);
         }
 
-
         private async Task<string> GetSearchResult(string scriptPath, string query)
         {
-	        string pythonExePath = _configuration["PathVariables:PythonExePath"];
-	        string scriptFolderPath = _configuration["PathVariables:ScriptFolderPath"];
+            string pythonExePath = _configuration["PathVariables:PythonExePath"];
+            string scriptFolderPath = _configuration["PathVariables:ScriptFolderPath"];
 
             ProcessStartInfo start = new ProcessStartInfo
             {
-				FileName = pythonExePath,
-				Arguments = $"{scriptFolderPath}{scriptPath} {query}", // Use the script folder path variable and the script path
-				UseShellExecute = false,
+                FileName = pythonExePath,
+                Arguments = $"{scriptFolderPath}{scriptPath} {query}",
+                UseShellExecute = false,
                 RedirectStandardOutput = true,
                 StandardOutputEncoding = Encoding.UTF8
-			};
+            };
 
             using (Process process = Process.Start(start))
             {
@@ -155,10 +152,8 @@ namespace MDS_PROJECT.Controllers
             }
         }
 
-        //CARREFOUR
         private List<ItemResult> ParseResults(string results)
         {
-            //Console.WriteLine(results);
             string pattern = @"Product: (.+?) (\d*[\.,]?\d+)\s*(\w+), Price: (\d+[\.,]?\d*) Lei";
             MatchCollection matches = Regex.Matches(results, pattern);
             return matches.Cast<Match>().Select(m => new ItemResult
@@ -169,8 +164,8 @@ namespace MDS_PROJECT.Controllers
                 Price = m.Groups[4].Value.Trim(),
                 Store = "Carrefour"
             }).ToList();
-            
         }
+
         private List<ItemResult> ParseKauflandResults(string results)
         {
             Console.WriteLine("SUNT IN KAUFLAND");
@@ -188,7 +183,6 @@ namespace MDS_PROJECT.Controllers
                     string price = match.Groups[3].Value.Trim();
                     string quantity = match.Groups[4].Value.Trim();
 
-                    // Assuming quantity is always in the format "number unit"
                     var quantitySplit = quantity.Split(new char[] { ' ' }, 2);
                     if (quantitySplit.Length == 2)
                     {
@@ -207,15 +201,11 @@ namespace MDS_PROJECT.Controllers
             return kauflandResults;
         }
 
-
-
         public IActionResult Index()
         {
-            // Creează o instanță a ViewModel-ului chiar dacă nu există date pentru a preveni referințele nule
             var viewModel = new SearchViewModel();
-            return View(viewModel); // Pasează modelul gol către view
+            return View(viewModel);
         }
-
 
         public IActionResult Privacy()
         {
