@@ -3,8 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Maps Example</title>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB1gTiBHMbS3O3WHTVhvZ0vVmNGwAZIQDw&amp;amp;libraries=places,geometry"></script>
+    <title>Search Results</title>
     <style>
         body {
             background-color: #333;
@@ -12,39 +11,13 @@
             font-family: Arial, sans-serif;
         }
 
-        input[type="text"],
-        input[type="number"],
-        button {
-            padding: 5px;
-            border-radius: 5px;
-            border: none;
-        }
-
-        input[type="text"],
-        input[type="number"] {
-            background-color: #444;
-            color: #fff;
-            border: 1px solid #fff;
-        }
-
-        button {
-            background-color: #ffc107;
-            color: #333;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-            button:hover {
-                background-color: #ffca28;
-            }
-
         .results-container {
             display: flex;
             justify-content: space-between;
         }
 
         .results {
-            width: 45%;
+            width: 23%;
         }
 
         .product-list {
@@ -72,6 +45,7 @@
 
     <!-- Results Section -->
     <div class="results-container">
+        <!-- Carrefour Results -->
         <div class="results">
             <h2><a href="javascript:void(0)" onclick="redirectToMaps('Carrefour')">Carrefour</a></h2>
             @if (Model != null && Model.CarrefourResults != null && Model.CarrefourResults.Any())
@@ -94,6 +68,7 @@
             }
         </div>
 
+        <!-- Kaufland Results -->
         <div class="results">
             <h2><a href="javascript:void(0)" onclick="redirectToMaps('Kaufland')">Kaufland</a></h2>
             @if (Model != null && Model.KauflandResults != null && Model.KauflandResults.Any())
@@ -113,6 +88,52 @@
             else
             {
                 <p class="no-results">Nu s-au găsit rezultate pentru Kaufland.</p>
+            }
+        </div>
+
+        <!-- Penny Results -->
+        <div class="results">
+            <h2><a href="javascript:void(0)" onclick="redirectToMaps('Penny')">Penny</a></h2>
+            @if (Model != null && Model.PennyResults != null && Model.PennyResults.Any())
+            {
+                <div>
+                    <button onclick="sortPennyResultsByPrice()">Sort by Price</button>
+                    <button onclick="sortPennyResultsByName()">Sort by Name</button>
+                    <button onclick="sortPennyResultsByQuantity()">Sort by Quantity</button>
+                </div>
+                <ul id="penny-results" class="product-list">
+                    @foreach (var item in Model.PennyResults)
+                    {
+                        <li class="penny-item" data-quantity="@item.Quantity" data-price="@item.Price">@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="no-results">Nu s-au găsit rezultate pentru Penny.</p>
+            }
+        </div>
+
+        <!-- Auchan Results -->
+        <div class="results">
+            <h2><a href="javascript:void(0)" onclick="redirectToMaps('Auchan')">Auchan</a></h2>
+            @if (Model != null && Model.AuchanResults != null && Model.AuchanResults.Any())
+            {
+                <div>
+                    <button onclick="sortAuchanResultsByPrice()">Sort by Price</button>
+                    <button onclick="sortAuchanResultsByName()">Sort by Name</button>
+                    <button onclick="sortAuchanResultsByQuantity()">Sort by Quantity</button>
+                </div>
+                <ul id="auchan-results" class="product-list">
+                    @foreach (var item in Model.AuchanResults)
+                    {
+                        <li class="auchan-item" data-quantity="@item.Quantity" data-price="@item.Price">@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="no-results">Nu s-au găsit rezultate pentru Auchan.</p>
             }
         </div>
     </div>
@@ -222,6 +243,98 @@
                 ul.appendChild(sortedItems[i]);
             }
             kauflandSortByQuantityAsc = !kauflandSortByQuantityAsc;
+        }
+
+        var pennySortByPriceAsc = true;
+        var pennySortByNameAsc = true;
+        var pennySortByQuantityAsc = true;
+
+        function sortPennyResultsByPrice() {
+            var ul = document.getElementById("penny-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var priceA = getPriceValue(a.innerText);
+                var priceB = getPriceValue(b.innerText);
+                return pennySortByPriceAsc ? priceA - priceB : priceB - priceA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            pennySortByPriceAsc = !pennySortByPriceAsc;
+        }
+
+        function sortPennyResultsByName() {
+            var ul = document.getElementById("penny-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var nameA = a.innerText.split(",")[0].trim();
+                var nameB = b.innerText.split(",")[0].trim();
+                return pennySortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            pennySortByNameAsc = !pennySortByNameAsc;
+        }
+
+        function sortPennyResultsByQuantity() {
+            var ul = document.getElementById("penny-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var quantityA = getQuantityValue(a.innerText);
+                var quantityB = getQuantityValue(b.innerText);
+                return pennySortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            pennySortByQuantityAsc = !pennySortByQuantityAsc;
+        }
+
+        var auchanSortByPriceAsc = true;
+        var auchanSortByNameAsc = true;
+        var auchanSortByQuantityAsc = true;
+
+        function sortAuchanResultsByPrice() {
+            var ul = document.getElementById("auchan-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var priceA = getPriceValue(a.innerText);
+                var priceB = getPriceValue(b.innerText);
+                return auchanSortByPriceAsc ? priceA - priceB : priceB - priceA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            auchanSortByPriceAsc = !auchanSortByPriceAsc;
+        }
+
+        function sortAuchanResultsByName() {
+            var ul = document.getElementById("auchan-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var nameA = a.innerText.split(",")[0].trim();
+                var nameB = b.innerText.split(",")[0].trim();
+                return auchanSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            auchanSortByNameAsc = !auchanSortByNameAsc;
+        }
+
+        function sortAuchanResultsByQuantity() {
+            var ul = document.getElementById("auchan-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var quantityA = getQuantityValue(a.innerText);
+                var quantityB = getQuantityValue(b.innerText);
+                return auchanSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            auchanSortByQuantityAsc = !auchanSortByQuantityAsc;
         }
     </script>
 </body>
