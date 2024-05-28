@@ -12,15 +12,13 @@
         }
 
         input[type="text"],
-        input[type="number"],
         button {
             padding: 5px;
             border-radius: 5px;
             border: none;
         }
 
-        input[type="text"],
-        input[type="number"] {
+        input[type="text"] {
             background-color: #444;
             color: #fff;
             border: 1px solid #fff;
@@ -69,7 +67,7 @@
                 <input type="text" name="items[0].ItemName" placeholder="Enter product name" required>
 
                 <label for="items[0].Quantity">Quantity:</label>
-                <input type="number" name="items[0].Quantity" placeholder="Enter quantity" required>
+                <input type="text" name="items[0].Quantity" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
 
                 <label for="items[0].Unit">Unit:</label>
                 <select name="items[0].Unit" required>
@@ -83,7 +81,7 @@
         </div>
 
         <button type="button" onclick="addItem()">Add Another Item</button>
-        <button type="submit">Calculate Total</button>
+        <button type="submit" onclick="normalizeQuantities()">Calculate Total</button>
     </form>
 
     <h2>Cart</h2>
@@ -91,6 +89,8 @@
         @foreach (var item in Model.Items)
         {
             <li>@item.ItemName - Quantity: @item.Quantity @item.Unit</li>
+            <p>Carrefour: @item.CarrefourMessage</p>
+            <p>Kaufland: @item.KauflandMessage</p>
         }
     </ul>
 
@@ -111,7 +111,7 @@
                         <label for="items[${itemIndex}].ItemName">Product Name:</label>
                         <input type="text" name="items[${itemIndex}].ItemName" placeholder="Enter product name" required>
                         <label for="items[${itemIndex}].Quantity">Quantity:</label>
-                        <input type="number" name="items[${itemIndex}].Quantity" placeholder="Enter quantity" required>
+                        <input type="text" name="items[${itemIndex}].Quantity" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
                         <label for="items[${itemIndex}].Unit">Unit:</label>
                         <select name="items[${itemIndex}].Unit" required>
                             <option value="liter">liter</option>
@@ -124,6 +124,13 @@
 
             cartInputs.appendChild(newItem);
             itemIndex++;
+        }
+
+        function normalizeQuantities() {
+            var inputs = document.querySelectorAll('input[name$="[Quantity]"]');
+            inputs.forEach(input => {
+                input.value = input.value.replace(',', '.');
+            });
         }
 
         function redirectToMaps(store) {
