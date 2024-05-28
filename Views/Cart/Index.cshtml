@@ -1,57 +1,133 @@
-﻿<!DOCTYPE html>
+﻿@model MDS_PROJECT.Controllers.CartController.CartViewModel
+
+<!DOCTYPE html>
 <html>
 <head>
     <title>Shopping Cart</title>
+    <style>
+        body {
+            background-color: #333;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        button {
+            padding: 5px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            background-color: #444;
+            color: #fff;
+            border: 1px solid #fff;
+        }
+
+        button {
+            background-color: #ffc107;
+            color: #333;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            button:hover {
+                background-color: #ffca28;
+            }
+
+        .results-container {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .results {
+            width: 45%;
+        }
+
+        .product-list {
+            padding: 0;
+        }
+
+            .product-list li {
+                margin-bottom: 10px;
+            }
+
+        .no-results {
+            color: red;
+        }
+    </style>
 </head>
 <body>
     <h1>Shopping Cart</h1>
 
-    <form id="productForm">
-        <label for="productName">Product Name:</label>
-        <input type="text" id="productName" placeholder="Enter product name">
+    <form asp-controller="Cart" asp-action="Index" method="post" id="productForm">
+        <div id="cartInputs">
+            <div class="cart-item">
+                <label for="items[0].ItemName">Product Name:</label>
+                <input type="text" name="items[0].ItemName" placeholder="Enter product name" required>
 
-        <label for="productQuantity">Quantity:</label>
-        <input type="number" id="productQuantity" placeholder="Enter quantity">
+                <label for="items[0].Quantity">Quantity:</label>
+                <input type="number" name="items[0].Quantity" placeholder="Enter quantity" required>
 
-        <label for="productUnit">Unit:</label>
-        <select id="productUnit">
-            <option value="liter">liter</option>
-            <option value="ml">ml</option>
-            <option value="piece">piece</option>
-            <option value="gram">gram</option>
-            <option value="kg">kg</option>
-        </select>
+                <label for="items[0].Unit">Unit:</label>
+                <select name="items[0].Unit" required>
+                    <option value="liter">liter</option>
+                    <option value="ml">ml</option>
+                    <option value="piece">piece</option>
+                    <option value="gram">gram</option>
+                    <option value="kg">kg</option>
+                </select>
+            </div>
+        </div>
 
-        <button type="button" onclick="addToCart()">Add to Cart</button>
-        <button type="button">Display Shop Prices</button>
+        <button type="button" onclick="addItem()">Add Another Item</button>
+        <button type="submit">Calculate Total</button>
     </form>
 
     <h2>Cart</h2>
-    <ul id="cartItems"></ul>
+    <ul id="cartItems">
+        @foreach (var item in Model.Items)
+        {
+            <li>@item.ItemName - Quantity: @item.Quantity @item.Unit</li>
+        }
+    </ul>
+
+    <h2>Totals</h2>
+    <p><a href="javascript:void(0)" onclick="redirectToMaps('Carrefour')">Carrefour Total:</a> @Model.CarrefourTotal Lei</p>
+    <p><a href="javascript:void(0)" onclick="redirectToMaps('Kaufland')">Kaufland Total:</a> @Model.KauflandTotal Lei</p>
 
     <script>
-        function addToCart() {
-            // Get product name, quantity, and unit
-            var productName = document.getElementById("productName").value.trim();
-            var productQuantity = parseInt(document.getElementById("productQuantity").value);
-            var productUnit = document.getElementById("productUnit").value;
+        var itemIndex = 1;
 
-            // Validate inputs
-            if (!productName || isNaN(productQuantity) || productQuantity <= 0) {
-                alert("Please enter a valid product name and quantity.");
-                return;
-            }
+        function addItem() {
+            var cartInputs = document.getElementById("cartInputs");
 
-            // Create a new list item
-            var listItem = document.createElement("li");
-            listItem.textContent = productName + " - Quantity: " + productQuantity + " " + productUnit;
+            var newItem = document.createElement("div");
+            newItem.classList.add("cart-item");
 
-            // Add the list item to the cart
-            document.getElementById("cartItems").appendChild(listItem);
+            newItem.innerHTML = `
+                        <label for="items[${itemIndex}].ItemName">Product Name:</label>
+                        <input type="text" name="items[${itemIndex}].ItemName" placeholder="Enter product name" required>
+                        <label for="items[${itemIndex}].Quantity">Quantity:</label>
+                        <input type="number" name="items[${itemIndex}].Quantity" placeholder="Enter quantity" required>
+                        <label for="items[${itemIndex}].Unit">Unit:</label>
+                        <select name="items[${itemIndex}].Unit" required>
+                            <option value="liter">liter</option>
+                            <option value="ml">ml</option>
+                            <option value="piece">piece</option>
+                            <option value="gram">gram</option>
+                            <option value="kg">kg</option>
+                        </select>
+                    `;
 
-            // Clear the input fields
-            document.getElementById("productName").value = "";
-            document.getElementById("productQuantity").value = "";
+            cartInputs.appendChild(newItem);
+            itemIndex++;
+        }
+
+        function redirectToMaps(store) {
+            window.location.href = "/Maps?store=" + store;
         }
     </script>
 </body>
