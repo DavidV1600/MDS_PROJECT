@@ -230,14 +230,47 @@ namespace MDS_PROJECT.Controllers
                 : @"Product Name: (.+?)\r\nProduct Subtitle: (.+?)\r\nProduct Price: (\d+[\.,]?\d*)\r\nProduct Quantity: (.+)";
 
             MatchCollection matches = Regex.Matches(results, pattern);
-            return matches.Cast<Match>().Select(m => new ItemResult
+            return matches.Cast<Match>().Select(m =>
             {
-                ItemName = store == "Carrefour" ? m.Groups[1].Value.Trim() : m.Groups[1].Value.Trim() + " " + m.Groups[2].Value.Trim(),
-                Quantity = store == "Carrefour" ? m.Groups[2].Value.Trim() : m.Groups[4].Value.Split(' ')[0].Trim(),
-                MeasureQuantity = store == "Carrefour" ? m.Groups[3].Value.Trim() : m.Groups[4].Value.Split(' ')[1].Trim(),
-                Price = m.Groups[4].Value.Trim() + " Lei",
-                Store = store
-            }).ToList();
+                if (store == "Carrefour")
+                {
+                    if (m.Groups.Count != 5)
+                    {
+                        Debug.WriteLine($"Unexpected match format for Carrefour: {m.Value}");
+                        return null;
+                    }
+                    return new ItemResult
+                    {
+                        ItemName = m.Groups[1].Value.Trim(),
+                        Quantity = m.Groups[2].Value.Trim(),
+                        MeasureQuantity = m.Groups[3].Value.Trim(),
+                        Price = m.Groups[4].Value.Trim(),
+                        Store = store
+                    };
+                }
+                else
+                {
+                    if (m.Groups.Count != 5)
+                    {
+                        Debug.WriteLine($"Unexpected match format for Kaufland: {m.Value}");
+                        return null;
+                    }
+                    var quantitySplit = m.Groups[4].Value.Trim().Split(' ');
+                    if (quantitySplit.Length != 2)
+                    {
+                        Debug.WriteLine($"Unexpected quantity format for Kaufland: {m.Groups[4].Value}");
+                        return null;
+                    }
+                    return new ItemResult
+                    {
+                        ItemName = m.Groups[1].Value.Trim() + " " + m.Groups[2].Value.Trim(),
+                        Quantity = quantitySplit[0].Trim(),
+                        MeasureQuantity = quantitySplit[1].Trim(),
+                        Price = m.Groups[3].Value.Trim() + " Lei",
+                        Store = store
+                    };
+                }
+            }).Where(item => item != null).ToList();
         }
 
         private void SaveProductToDatabase(ItemResult itemResult, string searchedItem)
