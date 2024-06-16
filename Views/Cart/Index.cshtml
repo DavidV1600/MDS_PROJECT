@@ -3,103 +3,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Shopping Cart</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-OERcA2mA7U6Tz8oWbklKepL0LGV6MyCAp6xQmKQ4iNuORm1gYkPi7dBIYlGq2D3T" crossorigin="anonymous">
     <style>
         body {
             background-color: #333;
-            color: #fff;
-            font-family: Arial, sans-serif;
+            color: white;
         }
 
-        input[type="text"],
-        button {
-            padding: 5px;
-            border-radius: 5px;
-            border: none;
+        .form-label {
+            margin-top: 10px;
         }
 
-        input[type="text"] {
-            background-color: #444;
-            color: #fff;
-            border: 1px solid #fff;
+        .cart-item {
+            border: 1px solid #555;
+            padding: 10px;
+            margin-bottom: 10px;
         }
 
-        button {
-            background-color: #ffc107;
-            color: #333;
-            cursor: pointer;
-            transition: background-color 0.3s;
+        h1, h2 {
+            color: white;
         }
 
-            button:hover {
-                background-color: #ffca28;
+        .totals a {
+            color: lightgreen;
+            text-decoration: none;
+        }
+
+            .totals a:hover {
+                text-decoration: underline;
             }
-
-        .results-container {
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .results {
-            width: 45%;
-        }
-
-        .product-list {
-            padding: 0;
-        }
-
-            .product-list li {
-                margin-bottom: 10px;
-            }
-
-        .no-results {
-            color: red;
-        }
     </style>
 </head>
 <body>
-    <h1>Shopping Cart</h1>
+    <div class="container">
+        <h1>Shopping Cart</h1>
 
-    <form asp-controller="Cart" asp-action="Index" method="post" id="productForm">
-        <div id="cartInputs">
-            <div class="cart-item">
-                <label for="items[0].ItemName">Product Name:</label>
-                <input type="text" name="items[0].ItemName" placeholder="Enter product name" required>
-
-                <label for="items[0].Quantity">Quantity:</label>
-                <input type="text" name="items[0].Quantity" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
-
-                <label for="items[0].Unit">Unit:</label>
-                <select name="items[0].Unit" required>
-                    <option value="liter">liter</option>
-                    <option value="ml">ml</option>
-                    <option value="piece">piece</option>
-                    <option value="gram">gram</option>
-                    <option value="kg">kg</option>
-                </select>
+        <form asp-controller="Cart" asp-action="Index" method="post" id="productForm">
+            <div id="cartInputs">
+                <div class="cart-item row">
+                    <div class="col-md-4">
+                        <label for="items[0].ItemName" class="form-label">Product Name:</label>
+                        <input type="text" name="items[0].ItemName" class="form-control" placeholder="Enter product name" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="items[0].Quantity" class="form-label">Quantity:</label>
+                        <input type="text" name="items[0].Quantity" class="form-control" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="items[0].Unit" class="form-label">Unit:</label>
+                        <select name="items[0].Unit" class="form-select" required>
+                            <option value="liter">liter</option>
+                            <option value="ml">ml</option>
+                            <option value="piece">piece</option>
+                            <option value="gram">gram</option>
+                            <option value="kg">kg</option>
+                        </select>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <label for="exactItemName">Exact Item Name:</label>
-        <input type="checkbox" name="exactItemName" value="True">
+            <div class="mt-3">
+                <label for="exactItemName" class="form-check-label">Exact Item Name</label>
+                <input type="checkbox" name="exactItemName" class="form-check-input" value="True">
+                <button type="button" class="btn btn-secondary" onclick="addItem()">Add Another Item</button>
+                <button type="submit" class="btn btn-primary" onclick="normalizeQuantities()">Calculate Total</button>
+            </div>
+        </form>
 
-        <button type="button" onclick="addItem()">Add Another Item</button>
-        <button type="submit" onclick="normalizeQuantities()">Calculate Total</button>
-    </form>
+        <h2 class="mt-5">Cart</h2>
+        <ul id="cartItems" class="list-group">
+            @foreach (var item in Model.Items)
+            {
+                <li class="list-group-item bg-dark text-white">
+                    @item.ItemName - Quantity: @item.Quantity @item.Unit
+                    <p>Carrefour: @item.CarrefourMessage</p>
+                    <p>Kaufland: @item.KauflandMessage</p>
+                </li>
+            }
+        </ul>
 
-    <h2>Cart</h2>
-    <ul id="cartItems">
-        @foreach (var item in Model.Items)
-        {
-            <li>@item.ItemName - Quantity: @item.Quantity @item.Unit</li>
-            <p>Carrefour: @item.CarrefourMessage</p>
-            <p>Kaufland: @item.KauflandMessage</p>
-        }
-    </ul>
-
-    <h2>Totals</h2>
-    <p><a href="javascript:void(0)" onclick="redirectToMaps('Carrefour')">Carrefour Total:</a> @Model.CarrefourTotal Lei</p>
-    <p><a href="javascript:void(0)" onclick="redirectToMaps('Kaufland')">Kaufland Total:</a> @Model.KauflandTotal Lei</p>
+        <h2 class="mt-5">Totals</h2>
+        <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Carrefour')">Carrefour Total:</a> @Model.CarrefourTotal Lei</p>
+        <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Kaufland')">Kaufland Total:</a> @Model.KauflandTotal Lei</p>
+    </div>
 
     <script>
         var itemIndex = 1;
@@ -108,21 +94,27 @@
             var cartInputs = document.getElementById("cartInputs");
 
             var newItem = document.createElement("div");
-            newItem.classList.add("cart-item");
+            newItem.classList.add("cart-item", "row");
 
             newItem.innerHTML = `
-                                <label for="items[${itemIndex}].ItemName">Product Name:</label>
-                                <input type="text" name="items[${itemIndex}].ItemName" placeholder="Enter product name" required>
-                                <label for="items[${itemIndex}].Quantity">Quantity:</label>
-                                <input type="text" name="items[${itemIndex}].Quantity" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
-                                <label for="items[${itemIndex}].Unit">Unit:</label>
-                                <select name="items[${itemIndex}].Unit" required>
-                                    <option value="liter">liter</option>
-                                    <option value="ml">ml</option>
-                                    <option value="piece">piece</option>
-                                    <option value="gram">gram</option>
-                                    <option value="kg">kg</option>
-                                </select>
+                                <div class="col-md-4">
+                                    <label for="items[${itemIndex}].ItemName" class="form-label">Product Name:</label>
+                                    <input type="text" name="items[${itemIndex}].ItemName" class="form-control" placeholder="Enter product name" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="items[${itemIndex}].Quantity" class="form-label">Quantity:</label>
+                                    <input type="text" name="items[${itemIndex}].Quantity" class="form-control" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="items[${itemIndex}].Unit" class="form-label">Unit:</label>
+                                    <select name="items[${itemIndex}].Unit" class="form-select" required>
+                                        <option value="liter">liter</option>
+                                        <option value="ml">ml</option>
+                                        <option value="piece">piece</option>
+                                        <option value="gram">gram</option>
+                                        <option value="kg">kg</option>
+                                    </select>
+                                </div>
                             `;
 
             cartInputs.appendChild(newItem);
