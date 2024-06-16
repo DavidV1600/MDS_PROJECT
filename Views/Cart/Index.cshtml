@@ -80,6 +80,9 @@
             </div>
         </div>
 
+        <label for="exactItemName">Exact Item Name:</label>
+        <input type="checkbox" name="exactItemName" value="True">
+
         <button type="button" onclick="addItem()">Add Another Item</button>
         <button type="submit" onclick="normalizeQuantities()">Calculate Total</button>
     </form>
@@ -108,19 +111,19 @@
             newItem.classList.add("cart-item");
 
             newItem.innerHTML = `
-                        <label for="items[${itemIndex}].ItemName">Product Name:</label>
-                        <input type="text" name="items[${itemIndex}].ItemName" placeholder="Enter product name" required>
-                        <label for="items[${itemIndex}].Quantity">Quantity:</label>
-                        <input type="text" name="items[${itemIndex}].Quantity" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
-                        <label for="items[${itemIndex}].Unit">Unit:</label>
-                        <select name="items[${itemIndex}].Unit" required>
-                            <option value="liter">liter</option>
-                            <option value="ml">ml</option>
-                            <option value="piece">piece</option>
-                            <option value="gram">gram</option>
-                            <option value="kg">kg</option>
-                        </select>
-                    `;
+                                <label for="items[${itemIndex}].ItemName">Product Name:</label>
+                                <input type="text" name="items[${itemIndex}].ItemName" placeholder="Enter product name" required>
+                                <label for="items[${itemIndex}].Quantity">Quantity:</label>
+                                <input type="text" name="items[${itemIndex}].Quantity" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
+                                <label for="items[${itemIndex}].Unit">Unit:</label>
+                                <select name="items[${itemIndex}].Unit" required>
+                                    <option value="liter">liter</option>
+                                    <option value="ml">ml</option>
+                                    <option value="piece">piece</option>
+                                    <option value="gram">gram</option>
+                                    <option value="kg">kg</option>
+                                </select>
+                            `;
 
             cartInputs.appendChild(newItem);
             itemIndex++;
