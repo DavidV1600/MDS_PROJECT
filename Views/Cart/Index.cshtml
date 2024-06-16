@@ -1,4 +1,4 @@
-﻿@model MDS_PROJECT.Controllers.CartController.CartViewModel
+@model MDS_PROJECT.Controllers.CartController.CartViewModel
 
 <!DOCTYPE html>
 <html>
@@ -29,9 +29,9 @@
             text-decoration: none;
         }
 
-            .totals a:hover {
-                text-decoration: underline;
-            }
+        .totals a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -61,26 +61,10 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <label for="exactItemName">Exact Item Name:</label>
-        <input type="checkbox" name="exactItemName" value="True">
-
-        <button type="button" onclick="addItem()">Add Another Item</button>
-        <button type="submit" onclick="normalizeQuantities()">Calculate Total</button>
-    </form>
-
-    <h2>Cart</h2>
-    <ul id="cartItems">
-        @foreach (var item in Model.Items)
-        {
-            <li>@item.ItemName - Quantity: @item.Quantity @item.Unit</li>
-            <p>Carrefour: @item.CarrefourMessage</p>
-            <p>Kaufland: @item.KauflandMessage</p>
-        }
-    </ul>
 
             <div class="mt-3">
+                <label for="exactItemName" class="form-check-label">Exact Item Name</label>
+                <input type="checkbox" name="exactItemName" class="form-check-input" value="True">
                 <button type="button" class="btn btn-secondary" onclick="addItem()">Add Another Item</button>
                 <button type="submit" class="btn btn-primary" onclick="normalizeQuantities()">Calculate Total</button>
             </div>
@@ -102,7 +86,7 @@
         <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Carrefour')">Carrefour Total:</a> @Model.CarrefourTotal Lei</p>
         <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Kaufland')">Kaufland Total:</a> @Model.KauflandTotal Lei</p>
     </div>
-
+    
     <script>
         var itemIndex = 1;
 
@@ -113,18 +97,24 @@
             newItem.classList.add("cart-item", "row");
 
             newItem.innerHTML = `
-                                <label for="items[${itemIndex}].ItemName">Product Name:</label>
-                                <input type="text" name="items[${itemIndex}].ItemName" placeholder="Enter product name" required>
-                                <label for="items[${itemIndex}].Quantity">Quantity:</label>
-                                <input type="text" name="items[${itemIndex}].Quantity" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
-                                <label for="items[${itemIndex}].Unit">Unit:</label>
-                                <select name="items[${itemIndex}].Unit" required>
-                                    <option value="liter">liter</option>
-                                    <option value="ml">ml</option>
-                                    <option value="piece">piece</option>
-                                    <option value="gram">gram</option>
-                                    <option value="kg">kg</option>
-                                </select>
+                                <div class="col-md-4">
+                                    <label for="items[${itemIndex}].ItemName" class="form-label">Product Name:</label>
+                                    <input type="text" name="items[${itemIndex}].ItemName" class="form-control" placeholder="Enter product name" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="items[${itemIndex}].Quantity" class="form-label">Quantity:</label>
+                                    <input type="text" name="items[${itemIndex}].Quantity" class="form-control" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="items[${itemIndex}].Unit" class="form-label">Unit:</label>
+                                    <select name="items[${itemIndex}].Unit" class="form-select" required>
+                                        <option value="liter">liter</option>
+                                        <option value="ml">ml</option>
+                                        <option value="piece">piece</option>
+                                        <option value="gram">gram</option>
+                                        <option value="kg">kg</option>
+                                    </select>
+                                </div>
                             `;
 
             cartInputs.appendChild(newItem);
