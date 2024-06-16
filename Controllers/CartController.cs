@@ -27,6 +27,8 @@ namespace MDS_PROJECT.Controllers
             public string Unit { get; set; }
             public string CarrefourMessage { get; set; }
             public string KauflandMessage { get; set; }
+            public string CarrefourStoreItemName { get; set; }
+            public string KauflandStoreItemName { get; set; }
         }
 
         public class ItemResult
@@ -67,7 +69,7 @@ namespace MDS_PROJECT.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Index(List<CartItem> items)
+        public async Task<IActionResult> Index(List<CartItem> items, bool exactItemName = false)
         {
             var cartViewModel = new CartViewModel { Items = items };
             decimal carrefourTotal = 0;
@@ -84,15 +86,11 @@ namespace MDS_PROJECT.Controllers
 
                 var carrefourMessage = "Not found in Carrefour";
                 var kauflandMessage = "Not found in Kaufland";
+                var carrefourStoreItemName = string.Empty;
+                var kauflandStoreItemName = string.Empty;
 
                 if (existingProducts.Any())
                 {
-                    Debug.WriteLine($"Found items in the database for {item.ItemName}:");
-                    foreach (var product in existingProducts)
-                    {
-                        Debug.WriteLine($"{product.Store}: {product.ItemName} - {product.Quantity} {product.MeasureQuantity} - {product.Price} Lei");
-                    }
-
                     var carrefourItems = existingProducts.Where(p => p.Store == "Carrefour").Select(p => new ItemResult(p)).ToList();
                     var kauflandItems = existingProducts.Where(p => p.Store == "Kaufland").Select(p => new ItemResult(p)).ToList();
 
@@ -105,37 +103,26 @@ namespace MDS_PROJECT.Controllers
                     if (cheapestCarrefourItem != null)
                     {
                         carrefourTotal += ParsePrice(cheapestCarrefourItem.Price);
-                        carrefourMessage = $"{cheapestCarrefourItem.Price} Lei";
+                        carrefourMessage = $"{cheapestCarrefourItem.ItemName}: {cheapestCarrefourItem.Price} Lei";
+                        carrefourStoreItemName = cheapestCarrefourItem.ItemName;
                     }
 
                     if (cheapestKauflandItem != null)
                     {
                         kauflandTotal += ParsePrice(cheapestKauflandItem.Price);
-                        kauflandMessage = $"{cheapestKauflandItem.Price} Lei";
+                        kauflandMessage = $"{cheapestKauflandItem.ItemName}: {cheapestKauflandItem.Price} Lei";
+                        kauflandStoreItemName = cheapestKauflandItem.ItemName;
                     }
                 }
                 else
                 {
-                    var carrefourTask = GetSearchResult("Carrefour.py", item.ItemName);
-                    var kauflandTask = GetSearchResult("Kaufland.py", item.ItemName);
+                    var carrefourTask = GetSearchResult("Carrefour.py", item.ItemName, exactItemName);
+                    var kauflandTask = GetSearchResult("Kaufland.py", item.ItemName, exactItemName);
 
                     await Task.WhenAll(carrefourTask, kauflandTask);
 
                     var carrefourResults = ParseResults(carrefourTask.Result, "Carrefour");
                     var kauflandResults = ParseResults(kauflandTask.Result, "Kaufland");
-
-                    Debug.WriteLine($"Found items from Python script for {item.ItemName}:");
-                    Debug.WriteLine("Carrefour:");
-                    foreach (var result in carrefourResults)
-                    {
-                        Debug.WriteLine($"{result.ItemName} - {result.Quantity} {result.MeasureQuantity} - {result.Price} Lei");
-                    }
-
-                    Debug.WriteLine("Kaufland:");
-                    foreach (var result in kauflandResults)
-                    {
-                        Debug.WriteLine($"{result.ItemName} - {result.Quantity} {result.MeasureQuantity} - {result.Price} Lei");
-                    }
 
                     carrefourResults = FilterItems(carrefourResults, item.Quantity);
                     kauflandResults = FilterItems(kauflandResults, item.Quantity);
@@ -146,20 +133,24 @@ namespace MDS_PROJECT.Controllers
                     if (cheapestCarrefourItem != null)
                     {
                         carrefourTotal += ParsePrice(cheapestCarrefourItem.Price);
-                        carrefourMessage = $"{cheapestCarrefourItem.Price} Lei";
+                        carrefourMessage = $"{cheapestCarrefourItem.ItemName}: {cheapestCarrefourItem.Price} Lei";
+                        carrefourStoreItemName = cheapestCarrefourItem.ItemName;
                         SaveProductToDatabase(cheapestCarrefourItem, item.ItemName);
                     }
 
                     if (cheapestKauflandItem != null)
                     {
                         kauflandTotal += ParsePrice(cheapestKauflandItem.Price);
-                        kauflandMessage = $"{cheapestKauflandItem.Price} Lei";
+                        kauflandMessage = $"{cheapestKauflandItem.ItemName}: {cheapestKauflandItem.Price} Lei";
+                        kauflandStoreItemName = cheapestKauflandItem.ItemName;
                         SaveProductToDatabase(cheapestKauflandItem, item.ItemName);
                     }
                 }
 
                 item.CarrefourMessage = carrefourMessage;
                 item.KauflandMessage = kauflandMessage;
+                item.CarrefourStoreItemName = carrefourStoreItemName;
+                item.KauflandStoreItemName = kauflandStoreItemName;
             }
 
             cartViewModel.CarrefourTotal = carrefourTotal.ToString("F2", CultureInfo.InvariantCulture);
@@ -168,29 +159,11 @@ namespace MDS_PROJECT.Controllers
             return View(cartViewModel);
         }
 
-        private List<ItemResult> FilterItems(List<ItemResult> items, string quantity)
-        {
-            quantity = NormalizeQuantity(quantity);
-            return items.Where(p => NormalizeQuantity(p.Quantity) == quantity).ToList();
-        }
-
-        private string NormalizeQuantity(string quantity)
-        {
-            return quantity.Replace(',', '.');
-        }
-
-        private decimal ParsePrice(string price)
-        {
-            // Remove any non-numeric characters (except for the decimal separator)
-            var cleanedPrice = Regex.Replace(price, @"[^\d,\.]", "");
-            return decimal.Parse(cleanedPrice.Replace(',', '.'), CultureInfo.InvariantCulture);
-        }
-
-        private async Task<string> GetSearchResult(string scriptPath, string query)
+        private async Task<string> GetSearchResult(string scriptPath, string query, bool exactItemName)
         {
             string pythonExePath = _configuration["PathVariables:PythonExePath"];
             string scriptFolderPath = _configuration["PathVariables:ScriptFolderPath"];
-            string fullScriptPath = Path.Combine(scriptFolderPath, scriptPath);
+            string fullScriptPath = Path.Combine(scriptFolderPath, exactItemName ? scriptPath.Replace(".py", "Exact.py") : scriptPath);
 
             Debug.WriteLine($"Executing command: {pythonExePath} {fullScriptPath} {query}");
 
@@ -221,6 +194,40 @@ namespace MDS_PROJECT.Controllers
                     return result;
                 }
             }
+        }
+
+        private List<ItemResult> FilterItems(List<ItemResult> items, string quantity)
+        {
+            var normalizedQuantities = GetEquivalentQuantities(quantity);
+            return items.Where(p => normalizedQuantities.Contains(NormalizeQuantity(p.Quantity))).ToList();
+        }
+
+        private List<string> GetEquivalentQuantities(string quantity)
+        {
+            var normalizedQuantity = NormalizeQuantity(quantity);
+            var equivalents = new List<string> { normalizedQuantity };
+
+            if (decimal.TryParse(normalizedQuantity, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal qty))
+            {
+                equivalents.Add((qty * 1000).ToString("F0", CultureInfo.InvariantCulture));
+                equivalents.Add((qty / 1000).ToString("F3", CultureInfo.InvariantCulture));
+                equivalents.Add(qty.ToString("F1", CultureInfo.InvariantCulture).Replace('.', ','));
+                equivalents.Add((qty * 1000).ToString(CultureInfo.InvariantCulture));
+                equivalents.Add((qty / 1000).ToString(CultureInfo.InvariantCulture));
+            }
+
+            return equivalents;
+        }
+
+        private string NormalizeQuantity(string quantity)
+        {
+            return quantity.Replace(',', '.');
+        }
+
+        private decimal ParsePrice(string price)
+        {
+            var cleanedPrice = Regex.Replace(price, @"[^\d,\.]", "");
+            return decimal.Parse(cleanedPrice.Replace(',', '.'), CultureInfo.InvariantCulture);
         }
 
         private List<ItemResult> ParseResults(string results, string store)
