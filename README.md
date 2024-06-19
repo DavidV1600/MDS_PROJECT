@@ -81,3 +81,5 @@
 
 8. **Optimizarea găsirii obiectelor dorite**
    - **Descriere:** Folosirea unei baze de date care stochează produsele deja căutate pentru o perioadă limitată de timp, dar care ajută găsirea instantă a obiectelor deja căutate.
+
+<img src="https://github.com/DavidV1600/MDS_PROJECT/blob/master/uml2.png?raw=true">
