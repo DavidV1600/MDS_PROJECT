@@ -29,9 +29,9 @@
             text-decoration: none;
         }
 
-        .totals a:hover {
-            text-decoration: underline;
-        }
+            .totals a:hover {
+                text-decoration: underline;
+            }
     </style>
 </head>
 <body>
@@ -41,15 +41,15 @@
         <form asp-controller="Cart" asp-action="Index" method="post" id="productForm">
             <div id="cartInputs">
                 <div class="cart-item row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="items[0].ItemName" class="form-label">Product Name:</label>
                         <input type="text" name="items[0].ItemName" class="form-control" placeholder="Enter product name" required>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="items[0].Quantity" class="form-label">Quantity:</label>
                         <input type="text" name="items[0].Quantity" class="form-control" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="items[0].Unit" class="form-label">Unit:</label>
                         <select name="items[0].Unit" class="form-select" required>
                             <option value="liter">liter</option>
@@ -58,6 +58,10 @@
                             <option value="gram">gram</option>
                             <option value="kg">kg</option>
                         </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="items[0].Multiplier" class="form-label">Multiplier:</label>
+                        <input type="number" name="items[0].Multiplier" class="form-control" placeholder="Enter number of items" value="1" min="1" required>
                     </div>
                 </div>
             </div>
@@ -75,7 +79,7 @@
             @foreach (var item in Model.Items)
             {
                 <li class="list-group-item bg-dark text-white">
-                    @item.ItemName - Quantity: @item.Quantity @item.Unit
+                    @item.ItemName - Quantity: @item.Quantity @item.Unit - Multiplier: @item.Multiplier
                     <p>Carrefour: @item.CarrefourMessage</p>
                     <p>Kaufland: @item.KauflandMessage</p>
                 </li>
@@ -86,7 +90,7 @@
         <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Carrefour')">Carrefour Total:</a> @Model.CarrefourTotal Lei</p>
         <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Kaufland')">Kaufland Total:</a> @Model.KauflandTotal Lei</p>
     </div>
-    
+
     <script>
         var itemIndex = 1;
 
@@ -97,25 +101,29 @@
             newItem.classList.add("cart-item", "row");
 
             newItem.innerHTML = `
-                                <div class="col-md-4">
-                                    <label for="items[${itemIndex}].ItemName" class="form-label">Product Name:</label>
-                                    <input type="text" name="items[${itemIndex}].ItemName" class="form-control" placeholder="Enter product name" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="items[${itemIndex}].Quantity" class="form-label">Quantity:</label>
-                                    <input type="text" name="items[${itemIndex}].Quantity" class="form-control" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="items[${itemIndex}].Unit" class="form-label">Unit:</label>
-                                    <select name="items[${itemIndex}].Unit" class="form-select" required>
-                                        <option value="liter">liter</option>
-                                        <option value="ml">ml</option>
-                                        <option value="piece">piece</option>
-                                        <option value="gram">gram</option>
-                                        <option value="kg">kg</option>
-                                    </select>
-                                </div>
-                            `;
+                                        <div class="col-md-3">
+                                            <label for="items[${itemIndex}].ItemName" class="form-label">Product Name:</label>
+                                            <input type="text" name="items[${itemIndex}].ItemName" class="form-control" placeholder="Enter product name" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="items[${itemIndex}].Quantity" class="form-label">Quantity:</label>
+                                            <input type="text" name="items[${itemIndex}].Quantity" class="form-control" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="items[${itemIndex}].Unit" class="form-label">Unit:</label>
+                                            <select name="items[${itemIndex}].Unit" class="form-select" required>
+                                                <option value="liter">liter</option>
+                                                <option value="ml">ml</option>
+                                                <option value="piece">piece</option>
+                                                <option value="gram">gram</option>
+                                                <option value="kg">kg</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label for="items[${itemIndex}].Multiplier" class="form-label">Multiplier:</label>
+                                            <input type="number" name="items[${itemIndex}].Multiplier" class="form-control" placeholder="Enter number of items" value="1" min="1" required>
+                                        </div>
+                                    `;
 
             cartInputs.appendChild(newItem);
             itemIndex++;
