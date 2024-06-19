@@ -8,14 +8,17 @@ using System.Text.RegularExpressions;
 
 namespace MDS_PROJECT.Controllers
 {
+    // Controller for handling product-related actions
     public class ProductController : Controller
     {
+        // ViewModel representing the search results
         public class SearchViewModel
         {
             public List<ItemResult> CarrefourResults { get; set; } = new List<ItemResult>();
             public List<ItemResult> KauflandResults { get; set; } = new List<ItemResult>();
         }
 
+        // Model representing an item result
         public class ItemResult
         {
             public string ItemName { get; set; }
@@ -25,8 +28,10 @@ namespace MDS_PROJECT.Controllers
             public string Store { get; set; }
             public string Searched { get; set; }
 
+            // Default constructor
             public ItemResult() { }
 
+            // Constructor to initialize from a Product object
             public ItemResult(Product product)
             {
                 ItemName = product.ItemName;
@@ -38,11 +43,12 @@ namespace MDS_PROJECT.Controllers
             }
         }
 
-        private readonly ApplicationDbContext db;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IConfiguration _configuration;
+        private readonly ApplicationDbContext db; // Database context
+        private readonly UserManager<ApplicationUser> _userManager; // User manager for handling user-related operations
+        private readonly RoleManager<IdentityRole> _roleManager; // Role manager for handling role-related operations
+        private readonly IConfiguration _configuration; // Configuration for accessing settings
 
+        // Constructor to initialize the controller with the necessary dependencies
         public ProductController(
             ApplicationDbContext context,
             UserManager<ApplicationUser> userManager,
@@ -55,14 +61,17 @@ namespace MDS_PROJECT.Controllers
             _configuration = configuration;
         }
 
+        // Action to handle the search request for products in both stores
         [HttpPost]
         public async Task<IActionResult> SearchBoth(string query, int quantity, bool exactItemName)
         {
+            // Return an empty view if the query is empty
             if (string.IsNullOrEmpty(query))
             {
                 return View("Index", new SearchViewModel());
             }
 
+            // Check if the product is already in the database
             var existingProducts = db.Products.Where(p => p.Searched == query).ToList();
             if (existingProducts.Any())
             {
@@ -75,6 +84,7 @@ namespace MDS_PROJECT.Controllers
                 return View("Index", view);
             }
 
+            // Execute the search scripts for Carrefour and Kaufland
             Task<string> carrefourTask;
             Task<string> kauflandTask;
 
@@ -106,6 +116,7 @@ namespace MDS_PROJECT.Controllers
                 KauflandResults = kauflandResults
             };
 
+            // Save the results to the database
             foreach (var item in viewModel.CarrefourResults.Concat(viewModel.KauflandResults))
             {
                 var product = new Product
@@ -129,6 +140,7 @@ namespace MDS_PROJECT.Controllers
             return View("Index", viewModel);
         }
 
+        // Executes a Python script to get search results for a product
         private async Task<string> GetSearchResult(string scriptPath, string query)
         {
             string pythonExePath = _configuration["PathVariables:PythonExePath"];
@@ -152,6 +164,7 @@ namespace MDS_PROJECT.Controllers
             }
         }
 
+        // Parses the results from the Carrefour search
         private List<ItemResult> ParseResults(string results)
         {
             string pattern = @"Product: (.+?) (\d*[\.,]?\d+)\s*(\w+), Price: (\d+[\.,]?\d*) Lei";
@@ -166,6 +179,7 @@ namespace MDS_PROJECT.Controllers
             }).ToList();
         }
 
+        // Parses the results from the Kaufland search
         private List<ItemResult> ParseKauflandResults(string results)
         {
             Console.WriteLine("SUNT IN KAUFLAND");
@@ -201,17 +215,20 @@ namespace MDS_PROJECT.Controllers
             return kauflandResults;
         }
 
+        // Action to display the initial search view
         public IActionResult Index()
         {
             var viewModel = new SearchViewModel();
             return View(viewModel);
         }
 
+        // Action to display the privacy view
         public IActionResult Privacy()
         {
             return View();
         }
 
+        // Action to handle errors
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
