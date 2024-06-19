@@ -12,42 +12,72 @@
 ## **Epic Stories**
 
 1. **Căutarea celor mai ieftine produse**
-   - Utilizatorul poate căuta produse într-o gamă variată de magazine pentru a găsi cele mai ieftine opțiuni.
+   - Utilizatorul poate căuta un produs și va primi o listă cu toate magazinele care au acel produs, împreună cu prețurile și cantitățile disponibile, pe care le poate sorta crescător/descrescător după cum dorește.
 
 2. **Afișarea magazinului cel mai apropiat**
-   - Sistemul afișează magazinul cel mai apropiat în funcție de locația utilizatorului sau de locația introdusă de utilizator.
+   - Sistemul afișează magazinul cel mai apropiat în funcție de locația utilizatorului sau de locația introdusă de utilizator, cu durata estimată până la el în funcție de mijlocul de deplasare și cu cea mai optimă rută spre acesta.
 
 3. **Calcularea celui mai ieftin coș de cumpărături**
-   - Utilizatorul poate calcula cel mai ieftin coș de cumpărături bazat pe produsele și cantitățile introduse.
+   - Utilizatorul poate introduce o listă de produse cu cantitățile dorite și va primi calculul celui mai ieftin coș pentru fiecare magazin, inclusiv suma totală a prețurilor pentru fiecare magazin și produsele selectate pentru fiecare coș.
 
 ---
 
 ## **User Stories**
 
-1. **Căutare produse cu prețuri și cantități disponibile**
-   - **Descriere:** Ca utilizator, vreau să caut un produs și să văd prețurile și cantitățile disponibile în diverse magazine, astfel încât să pot alege cea mai bună opțiune pentru nevoile mele.
-   
-2. **Vizualizare magazin cel mai apropiat**
-   - **Descriere:** Ca utilizator, vreau să văd cel mai apropiat magazin bazat pe locația mea curentă sau o locație introdusă de mine, astfel încât să pot ajunge convenabil la acesta.
-   
-3. **Calcularea celui mai ieftin coș de cumpărături**
-   - **Descriere:** Ca utilizator, vreau să introduc o listă de produse cu cantitățile necesare și să obțin un calcul al celui mai ieftin coș posibil din magazinele disponibile, astfel încât să economisesc bani la cumpărături.
+1. **Căutare produse disponibile la magazine**
+   - **Descriere:** Ca utilizator, vreau să pot vedea toate produsele de un anumit tip disponibile la diverse magazine, astfel încât să pot alege cel mai potrivit magazin pentru a cumpăra produsul dorit.
+
+2. **Sortare produse după cantitate**
+   - **Descriere:** Ca utilizator, vreau să pot vedea toate produsele de un tip disponibile la magazine sortate după cantitate, atât în ordine crescătoare cât și descrescătoare, astfel încât să pot găsi rapid produsele care îndeplinesc nevoile mele cantitative.
+
+3. **Sortare produse după preț**
+   - **Descriere:** Ca utilizator, vreau să pot vedea toate produsele de un tip disponibile la magazine sortate după preț, astfel încât să pot alege cel mai ieftin produs disponibil.
+
+4. **Sortare produse în ordine alfabetică**
+   - **Descriere:** Ca utilizator, vreau să pot vedea produsele în ordine alfabetică, astfel încât să găsesc mai ușor un anumit produs pe care îl caut.
+
+5. **Vizualizare magazin cel mai apropiat**
+   - **Descriere:** Ca utilizator, vreau să pot vedea unde se află cel mai apropiat magazin care are produsele pe care le doresc, astfel încât să pot economisi timp și efort.
+
+6. **Detalii rută și durată până la magazin**
+   - **Descriere:** Ca utilizator, vreau să văd care este durata, ruta și modurile în care pot ajunge la magazinul dorit, astfel încât să pot planifica eficient drumul meu.
+
+7. **Setare locație personalizată**
+   - **Descriere:** Ca utilizator, vreau să pot seta o locație personalizată, astfel încât să pot vedea rutele și magazinele disponibile în funcție de acea locație, indiferent de locul în care mă aflu.
+
+8. **Construire coș de cumpărături**
+   - **Descriere:** Ca utilizator, vreau să pot construi un coș de cumpărături și să văd produsele de acest tip disponibile la fiecare magazin, astfel încât să pot compara opțiunile și alege cea mai bună ofertă.
+
+9. **Calcul cel mai ieftin coș de cumpărături**
+   - **Descriere:** Ca utilizator, vreau să văd cel mai ieftin coș de cumpărături pentru fiecare magazin, incluzând prețul total al coșului, astfel încât să pot face achiziții economice.
+
+10. **Alegerea cantităților pentru coșul de cumpărături**
+    - **Descriere:** Ca utilizator, vreau să pot alege cantitatea pentru fiecare obiect din coșul de cumpărături, astfel încât să pot personaliza achizițiile în funcție de nevoile mele.
 
 ---
 
 ## **Backlog**
 
 1. **Integrarea API-urilor pentru geo-localizare și prețuri produse**
-   - **Descriere:** Implementarea integrării cu API-uri care oferă date de geo-localizare și prețuri pentru produse.
+   - **Descriere:** Implementarea integrării cu API-uri care oferă date de geo-localizare automate pentru utilizator.
+  
+2. **Integrarea unei locații custom**
+   - **Descriere:** Adăugarea opțiunii pentru utilizator de a putea selecta din ce locație dorește să fie calculate rutele către magazine.
+  
+3. **Integrarea completă a hărților**
+   - **Descriere:** Adăugarea unor butoane ce lasă utilizatorul să își selecteze modul de transport dorit și afișarea rutei împreună cu timpul estimat.
+  
+4. **Adăugarea web-crawlers**
+   - **Descriere:** Implementarea unor scripturi de Python care accesează paginile cu produse ale magazinelor și selectează codul HTML relevant pentru produse.
 
-2. **Dezvoltarea interfeței de utilizator**
-   - **Descriere:** Dezvoltarea unei interfețe de utilizator pentru căutarea și afișarea produselor din diverse magazine.
+5. **Îmbunătățirea web-crawlers**
+   - **Descriere:** Adăugarea unei opțiuni atât pentru codurile de Python, cât și pentru utilizator care îl întreabă dacă dorește ca inputul lui să fie găsit exact cum a fost scris sau să fie incluse și alte iteme cu denumiri apropiate.
 
-3. **Optimizarea algoritmului de calcul**
-   - **Descriere:** Optimizarea algoritmului pentru calcularea celui mai ieftin coș de cumpărături bazat pe datele introduse de utilizator.
+6. **Dezvoltarea interfeței de utilizator**
+   - **Descriere:** Dezvoltarea unei interfețe de utilizator pentru căutarea și afișarea produselor din diverse magazine, sortate după criteriile dorite.
 
-4. **Testarea funcționalităților**
-   - **Descriere:** Testarea tuturor funcționalităților pe diferite dispozitive și locații pentru a asigura acuratețea și performanța.
+7. **Implementarea unui coș de cumpărături**
+   - **Descriere:** Adăugarea unui coș de cumpărături care adaugă automat cel mai ieftin produs care este corespunzător cu numele și cantitatea introdusă de utilizator.
 
----
-
+8. **Optimizarea găsirii obiectelor dorite**
+   - **Descriere:** Folosirea unei baze de date care stochează produsele deja căutate pentru o perioadă limitată de timp, dar care ajută găsirea instantă a obiectelor deja căutate.
