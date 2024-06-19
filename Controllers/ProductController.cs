@@ -5,6 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace MDS_PROJECT.Controllers
 {
@@ -63,7 +67,7 @@ namespace MDS_PROJECT.Controllers
 
         // Action to handle the search request for products in both stores
         [HttpPost]
-        public async Task<IActionResult> SearchBoth(string query, int quantity, bool exactItemName)
+        public async Task<IActionResult> SearchBoth(string query, string quantity, bool exactItemName)
         {
             // Return an empty view if the query is empty
             if (string.IsNullOrEmpty(query))
@@ -77,8 +81,8 @@ namespace MDS_PROJECT.Controllers
             {
                 var view = new SearchViewModel
                 {
-                    CarrefourResults = existingProducts.Where(p => p.Store == "Carrefour" && (quantity == 0 || p.Quantity == quantity.ToString())).Select(p => new ItemResult(p)).ToList(),
-                    KauflandResults = existingProducts.Where(p => p.Store == "Kaufland" && (quantity == 0 || p.Quantity == quantity.ToString())).Select(p => new ItemResult(p)).ToList()
+                    CarrefourResults = existingProducts.Where(p => p.Store == "Carrefour" && (string.IsNullOrEmpty(quantity) || GetEquivalentQuantities(quantity).Contains(p.Quantity))).Select(p => new ItemResult(p)).ToList(),
+                    KauflandResults = existingProducts.Where(p => p.Store == "Kaufland" && (string.IsNullOrEmpty(quantity) || GetEquivalentQuantities(quantity).Contains(p.Quantity))).Select(p => new ItemResult(p)).ToList()
                 };
 
                 return View("Index", view);
@@ -104,10 +108,11 @@ namespace MDS_PROJECT.Controllers
             var carrefourResults = ParseResults(carrefourTask.Result);
             var kauflandResults = ParseKauflandResults(kauflandTask.Result);
 
-            if (quantity > 0)
+            if (!string.IsNullOrEmpty(quantity))
             {
-                carrefourResults = carrefourResults.Where(p => p.Quantity == quantity.ToString()).ToList();
-                kauflandResults = kauflandResults.Where(p => p.Quantity == quantity.ToString()).ToList();
+                var equivalentQuantities = GetEquivalentQuantities(quantity);
+                carrefourResults = carrefourResults.Where(p => equivalentQuantities.Contains(p.Quantity)).ToList();
+                kauflandResults = kauflandResults.Where(p => equivalentQuantities.Contains(p.Quantity)).ToList();
             }
 
             var viewModel = new SearchViewModel
@@ -140,7 +145,7 @@ namespace MDS_PROJECT.Controllers
             return View("Index", viewModel);
         }
 
-        // Executes a Python script to get search results for a product
+
         private async Task<string> GetSearchResult(string scriptPath, string query)
         {
             string pythonExePath = _configuration["PathVariables:PythonExePath"];
@@ -164,7 +169,6 @@ namespace MDS_PROJECT.Controllers
             }
         }
 
-        // Parses the results from the Carrefour search
         private List<ItemResult> ParseResults(string results)
         {
             string pattern = @"Product: (.+?) (\d*[\.,]?\d+)\s*(\w+), Price: (\d+[\.,]?\d*) Lei";
@@ -179,7 +183,6 @@ namespace MDS_PROJECT.Controllers
             }).ToList();
         }
 
-        // Parses the results from the Kaufland search
         private List<ItemResult> ParseKauflandResults(string results)
         {
             Console.WriteLine("SUNT IN KAUFLAND");
@@ -213,6 +216,32 @@ namespace MDS_PROJECT.Controllers
             }
 
             return kauflandResults;
+        }
+
+        private List<string> GetEquivalentQuantities(string quantity)
+        {
+            var normalizedQuantity = NormalizeQuantity(quantity);
+            var equivalents = new List<string> { normalizedQuantity };
+
+            if (decimal.TryParse(normalizedQuantity, NumberStyles.Any, CultureInfo.InvariantCulture, out decimal qty))
+            {
+                equivalents.Add((qty * 1000).ToString("F0", CultureInfo.InvariantCulture));
+                equivalents.Add((qty / 1000).ToString("F3", CultureInfo.InvariantCulture));
+                equivalents.Add(qty.ToString("F1", CultureInfo.InvariantCulture).Replace('.', ','));
+                equivalents.Add((qty * 1000).ToString(CultureInfo.InvariantCulture));
+                equivalents.Add((qty / 1000).ToString(CultureInfo.InvariantCulture));
+            }
+
+            return equivalents;
+        }
+
+        private string NormalizeQuantity(string quantity)
+        {
+            if (string.IsNullOrEmpty(quantity))
+            {
+                return string.Empty;
+            }
+            return quantity.Replace(',', '.');
         }
 
         // Action to display the initial search view

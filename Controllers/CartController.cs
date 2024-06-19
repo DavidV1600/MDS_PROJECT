@@ -29,6 +29,7 @@ namespace MDS_PROJECT.Controllers
             public string KauflandMessage { get; set; }
             public string CarrefourStoreItemName { get; set; }
             public string KauflandStoreItemName { get; set; }
+            public int Multiplier { get; set; } = 1; // Default to 1 if not specified
         }
 
         public class ItemResult
@@ -102,14 +103,14 @@ namespace MDS_PROJECT.Controllers
 
                     if (cheapestCarrefourItem != null)
                     {
-                        carrefourTotal += ParsePrice(cheapestCarrefourItem.Price);
+                        carrefourTotal += ParsePrice(cheapestCarrefourItem.Price) * item.Multiplier;
                         carrefourMessage = $"{cheapestCarrefourItem.ItemName}: {cheapestCarrefourItem.Price} Lei";
                         carrefourStoreItemName = cheapestCarrefourItem.ItemName;
                     }
 
                     if (cheapestKauflandItem != null)
                     {
-                        kauflandTotal += ParsePrice(cheapestKauflandItem.Price);
+                        kauflandTotal += ParsePrice(cheapestKauflandItem.Price) * item.Multiplier;
                         kauflandMessage = $"{cheapestKauflandItem.ItemName}: {cheapestKauflandItem.Price} Lei";
                         kauflandStoreItemName = cheapestKauflandItem.ItemName;
                     }
@@ -132,7 +133,7 @@ namespace MDS_PROJECT.Controllers
 
                     if (cheapestCarrefourItem != null)
                     {
-                        carrefourTotal += ParsePrice(cheapestCarrefourItem.Price);
+                        carrefourTotal += ParsePrice(cheapestCarrefourItem.Price) * item.Multiplier;
                         carrefourMessage = $"{cheapestCarrefourItem.ItemName}: {cheapestCarrefourItem.Price} Lei";
                         carrefourStoreItemName = cheapestCarrefourItem.ItemName;
                         SaveProductToDatabase(cheapestCarrefourItem, item.ItemName);
@@ -140,7 +141,7 @@ namespace MDS_PROJECT.Controllers
 
                     if (cheapestKauflandItem != null)
                     {
-                        kauflandTotal += ParsePrice(cheapestKauflandItem.Price);
+                        kauflandTotal += ParsePrice(cheapestKauflandItem.Price) * item.Multiplier;
                         kauflandMessage = $"{cheapestKauflandItem.ItemName}: {cheapestKauflandItem.Price} Lei";
                         kauflandStoreItemName = cheapestKauflandItem.ItemName;
                         SaveProductToDatabase(cheapestKauflandItem, item.ItemName);
@@ -221,6 +222,10 @@ namespace MDS_PROJECT.Controllers
 
         private string NormalizeQuantity(string quantity)
         {
+            if (string.IsNullOrEmpty(quantity))
+            {
+                return string.Empty;
+            }
             return quantity.Replace(',', '.');
         }
 
