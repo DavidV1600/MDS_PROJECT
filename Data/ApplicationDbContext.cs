@@ -16,5 +16,8 @@ namespace MDS_PROJECT.Data
         }
         public DbSet<Product> Products {  get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
+        public ApplicationDbContext()
+        {
+        }
     }
 }
