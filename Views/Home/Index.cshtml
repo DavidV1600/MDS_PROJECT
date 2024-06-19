@@ -2,9 +2,42 @@
 <html>
 <head>
     <title>Main Page</title>
+    <style>
+        body {
+            background-color: #333;
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #555;
+            color: #fff;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+            button:hover {
+                background-color: #777;
+            }
+
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+    </style>
 </head>
 <body>
-    <div style="text-align: center; margin-top: 50px;">
+    <div class="container">
         <input type="text" id="userAddress" placeholder="Enter your address">
         <button onclick="saveAddress()">Save Address</button>
         <br><br>
