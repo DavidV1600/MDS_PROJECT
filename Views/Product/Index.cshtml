@@ -32,7 +32,6 @@
             .totals a:hover {
                 text-decoration: underline;
             }
-
     </style>
 </head>
 <body>
@@ -99,6 +98,50 @@
                 else
                 {
                     <p class="no-results">Nu s-au găsit rezultate pentru Kaufland.</p>
+                }
+            </div>
+
+            <div class="results">
+                <h2><a href="javascript:void(0)" onclick="redirectToMaps('Auchan')">Auchan</a></h2>
+                @if (Model != null && Model.AuchanResults != null && Model.AuchanResults.Any())
+                {
+                    <div class="mb-3">
+                        <button class="btn btn-secondary btn-sm" onclick="sortAuchanResultsByPrice()">Sort by Price</button>
+                        <button class="btn btn-secondary btn-sm" onclick="sortAuchanResultsByName()">Sort by Name</button>
+                        <button class="btn btn-secondary btn-sm" onclick="sortAuchanResultsByQuantity()">Sort by Quantity</button>
+                    </div>
+                    <ul id="auchan-results" class="product-list">
+                        @foreach (var item in Model.AuchanResults)
+                        {
+                            <li class="auchan-item" data-quantity="@item.Quantity" data-price="@item.Price">@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="no-results">Nu s-au găsit rezultate pentru Auchan.</p>
+                }
+            </div>
+
+            <div class="results">
+                <h2><a href="javascript:void(0)" onclick="redirectToMaps('Mega')">Mega</a></h2>
+                @if (Model != null && Model.MegaResults != null && Model.MegaResults.Any())
+                {
+                    <div class="mb-3">
+                        <button class="btn btn-secondary btn-sm" onclick="sortMegaResultsByPrice()">Sort by Price</button>
+                        <button class="btn btn-secondary btn-sm" onclick="sortMegaResultsByName()">Sort by Name</button>
+                        <button class="btn btn-secondary btn-sm" onclick="sortMegaResultsByQuantity()">Sort by Quantity</button>
+                    </div>
+                    <ul id="mega-results" class="product-list">
+                        @foreach (var item in Model.MegaResults)
+                        {
+                            <li class="mega-item" data-quantity="@item.Quantity" data-price="@item.Price">@item.ItemName, @item.Quantity @item.MeasureQuantity, @item.Price Lei</li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="no-results">Nu s-au găsit rezultate pentru Mega.</p>
                 }
             </div>
         </div>
@@ -209,6 +252,98 @@
                 ul.appendChild(sortedItems[i]);
             }
             kauflandSortByQuantityAsc = !kauflandSortByQuantityAsc;
+        }
+
+        var auchanSortByPriceAsc = true; // Added for Auchan
+        var auchanSortByNameAsc = true; // Added for Auchan
+        var auchanSortByQuantityAsc = true; // Added for Auchan
+
+        function sortAuchanResultsByPrice() { // Added for Auchan
+            var ul = document.getElementById("auchan-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var priceA = getPriceValue(a.innerText);
+                var priceB = getPriceValue(b.innerText);
+                return auchanSortByPriceAsc ? priceA - priceB : priceB - priceA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            auchanSortByPriceAsc = !auchanSortByPriceAsc;
+        }
+
+        function sortAuchanResultsByName() { // Added for Auchan
+            var ul = document.getElementById("auchan-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var nameA = a.innerText.split(",")[0].trim();
+                var nameB = b.innerText.split(",")[0].trim();
+                return auchanSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            auchanSortByNameAsc = !auchanSortByNameAsc;
+        }
+
+        function sortAuchanResultsByQuantity() { // Added for Auchan
+            var ul = document.getElementById("auchan-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var quantityA = getQuantityValue(a.innerText);
+                var quantityB = getQuantityValue(b.innerText);
+                return auchanSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            auchanSortByQuantityAsc = !auchanSortByQuantityAsc;
+        }
+
+        var megaSortByPriceAsc = true; // Added for Mega
+        var megaSortByNameAsc = true; // Added for Mega
+        var megaSortByQuantityAsc = true; // Added for Mega
+
+        function sortMegaResultsByPrice() { // Added for Mega
+            var ul = document.getElementById("mega-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var priceA = getPriceValue(a.innerText);
+                var priceB = getPriceValue(b.innerText);
+                return megaSortByPriceAsc ? priceA - priceB : priceB - priceA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            megaSortByPriceAsc = !megaSortByPriceAsc;
+        }
+
+        function sortMegaResultsByName() { // Added for Mega
+            var ul = document.getElementById("mega-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var nameA = a.innerText.split(",")[0].trim();
+                var nameB = b.innerText.split(",")[0].trim();
+                return megaSortByNameAsc ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA);
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            megaSortByNameAsc = !megaSortByNameAsc;
+        }
+
+        function sortMegaResultsByQuantity() { // Added for Mega
+            var ul = document.getElementById("mega-results");
+            var items = ul.getElementsByTagName("li");
+            var sortedItems = Array.from(items).sort(function (a, b) {
+                var quantityA = getQuantityValue(a.innerText);
+                var quantityB = getQuantityValue(b.innerText);
+                return megaSortByQuantityAsc ? quantityA - quantityB : quantityB - quantityA;
+            });
+            for (var i = 0; i < sortedItems.length; i++) {
+                ul.appendChild(sortedItems[i]);
+            }
+            megaSortByQuantityAsc = !megaSortByQuantityAsc;
         }
     </script>
 </body>

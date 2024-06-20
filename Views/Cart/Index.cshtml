@@ -1,4 +1,4 @@
-@model MDS_PROJECT.Controllers.CartController.CartViewModel
+﻿@model MDS_PROJECT.Controllers.CartController.CartViewModel
 
 <!DOCTYPE html>
 <html>
@@ -82,6 +82,8 @@
                     @item.ItemName - Quantity: @item.Quantity @item.Unit - Multiplier: @item.Multiplier
                     <p>Carrefour: @item.CarrefourMessage</p>
                     <p>Kaufland: @item.KauflandMessage</p>
+                    <p>Auchan: @item.AuchanMessage</p>
+                    <p>Mega: @item.MegaMessage</p>
                 </li>
             }
         </ul>
@@ -89,6 +91,8 @@
         <h2 class="mt-5">Totals</h2>
         <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Carrefour')">Carrefour Total:</a> @Model.CarrefourTotal Lei</p>
         <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Kaufland')">Kaufland Total:</a> @Model.KauflandTotal Lei</p>
+        <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Auchan')">Auchan Total:</a> @Model.AuchanTotal Lei</p>
+        <p class="totals"><a href="javascript:void(0)" onclick="redirectToMaps('Mega')">Mega Total:</a> @Model.MegaTotal Lei</p>
     </div>
 
     <script>
@@ -101,29 +105,29 @@
             newItem.classList.add("cart-item", "row");
 
             newItem.innerHTML = `
-                                        <div class="col-md-3">
-                                            <label for="items[${itemIndex}].ItemName" class="form-label">Product Name:</label>
-                                            <input type="text" name="items[${itemIndex}].ItemName" class="form-control" placeholder="Enter product name" required>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label for="items[${itemIndex}].Quantity" class="form-label">Quantity:</label>
-                                            <input type="text" name="items[${itemIndex}].Quantity" class="form-control" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label for="items[${itemIndex}].Unit" class="form-label">Unit:</label>
-                                            <select name="items[${itemIndex}].Unit" class="form-select" required>
-                                                <option value="liter">liter</option>
-                                                <option value="ml">ml</option>
-                                                <option value="piece">piece</option>
-                                                <option value="gram">gram</option>
-                                                <option value="kg">kg</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <label for="items[${itemIndex}].Multiplier" class="form-label">Multiplier:</label>
-                                            <input type="number" name="items[${itemIndex}].Multiplier" class="form-control" placeholder="Enter number of items" value="1" min="1" required>
-                                        </div>
-                                    `;
+                        <div class="col-md-3">
+                            <label for="items[${itemIndex}].ItemName" class="form-label">Product Name:</label>
+                            <input type="text" name="items[${itemIndex}].ItemName" class="form-control" placeholder="Enter product name" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="items[${itemIndex}].Quantity" class="form-label">Quantity:</label>
+                            <input type="text" name="items[${itemIndex}].Quantity" class="form-control" placeholder="Enter quantity (e.g., 1.5 or 1,5)" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="items[${itemIndex}].Unit" class="form-label">Unit:</label>
+                            <select name="items[${itemIndex}].Unit" class="form-select" required>
+                                <option value="liter">liter</option>
+                                <option value="ml">ml</option>
+                                <option value="piece">piece</option>
+                                <option value="gram">gram</option>
+                                <option value="kg">kg</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="items[${itemIndex}].Multiplier" class="form-label">Multiplier:</label>
+                            <input type="number" name="items[${itemIndex}].Multiplier" class="form-control" placeholder="Enter number of items" value="1" min="1" required>
+                        </div>
+                    `;
 
             cartInputs.appendChild(newItem);
             itemIndex++;

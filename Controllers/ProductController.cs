@@ -3,16 +3,12 @@ using MDS_PROJECT.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.Text;
 
 namespace MDS_PROJECT.Controllers
 {
-    // Controller for handling product-related actions
     public class ProductController : Controller
     {
         // ViewModel representing the search results
@@ -20,6 +16,8 @@ namespace MDS_PROJECT.Controllers
         {
             public List<ItemResult> CarrefourResults { get; set; } = new List<ItemResult>();
             public List<ItemResult> KauflandResults { get; set; } = new List<ItemResult>();
+            public List<ItemResult> AuchanResults { get; set; } = new List<ItemResult>();
+            public List<ItemResult> MegaResults { get; set; } = new List<ItemResult>(); // Added for Mega results
         }
 
         // Model representing an item result
@@ -65,7 +63,7 @@ namespace MDS_PROJECT.Controllers
             _configuration = configuration;
         }
 
-        // Action to handle the search request for products in both stores
+        // Action to handle the search request for products in all stores
         [HttpPost]
         public async Task<IActionResult> SearchBoth(string query, string quantity, bool exactItemName)
         {
@@ -82,47 +80,61 @@ namespace MDS_PROJECT.Controllers
                 var view = new SearchViewModel
                 {
                     CarrefourResults = existingProducts.Where(p => p.Store == "Carrefour" && (string.IsNullOrEmpty(quantity) || GetEquivalentQuantities(quantity).Contains(p.Quantity))).Select(p => new ItemResult(p)).ToList(),
-                    KauflandResults = existingProducts.Where(p => p.Store == "Kaufland" && (string.IsNullOrEmpty(quantity) || GetEquivalentQuantities(quantity).Contains(p.Quantity))).Select(p => new ItemResult(p)).ToList()
+                    KauflandResults = existingProducts.Where(p => p.Store == "Kaufland" && (string.IsNullOrEmpty(quantity) || GetEquivalentQuantities(quantity).Contains(p.Quantity))).Select(p => new ItemResult(p)).ToList(),
+                    AuchanResults = existingProducts.Where(p => p.Store == "Auchan" && (string.IsNullOrEmpty(quantity) || GetEquivalentQuantities(quantity).Contains(p.Quantity))).Select(p => new ItemResult(p)).ToList(),
+                    MegaResults = existingProducts.Where(p => p.Store == "Mega" && (string.IsNullOrEmpty(quantity) || GetEquivalentQuantities(quantity).Contains(p.Quantity))).Select(p => new ItemResult(p)).ToList() // Added for Mega results
                 };
 
                 return View("Index", view);
             }
 
-            // Execute the search scripts for Carrefour and Kaufland
+            // Execute the search scripts for Carrefour, Kaufland, Auchan, and Mega
             Task<string> carrefourTask;
             Task<string> kauflandTask;
+            Task<string> auchanTask;
+            Task<string> megaTask; // Added for Mega
 
             if (exactItemName)
             {
                 carrefourTask = GetSearchResult("CarrefourExact.py", query);
                 kauflandTask = GetSearchResult("KauflandExact.py", query);
+                auchanTask = GetSearchResult("AuchanExact.py", query);
+                megaTask = GetSearchResult("MegaExact.py", query); // Added for Mega
             }
             else
             {
                 carrefourTask = GetSearchResult("Carrefour.py", query);
                 kauflandTask = GetSearchResult("Kaufland.py", query);
+                auchanTask = GetSearchResult("Auchan.py", query);
+                megaTask = GetSearchResult("Mega.py", query); // Added for Mega
             }
 
-            await Task.WhenAll(carrefourTask, kauflandTask);
+            await Task.WhenAll(carrefourTask, kauflandTask, auchanTask, megaTask); // Updated to include Mega task
 
             var carrefourResults = ParseResults(carrefourTask.Result);
             var kauflandResults = ParseKauflandResults(kauflandTask.Result);
+            var auchanResults = ParseAuchanResults(auchanTask.Result);
+            var megaResults = ParseMegaResults(megaTask.Result); // Added for Mega results
 
             if (!string.IsNullOrEmpty(quantity))
             {
                 var equivalentQuantities = GetEquivalentQuantities(quantity);
                 carrefourResults = carrefourResults.Where(p => equivalentQuantities.Contains(p.Quantity)).ToList();
                 kauflandResults = kauflandResults.Where(p => equivalentQuantities.Contains(p.Quantity)).ToList();
+                auchanResults = auchanResults.Where(p => equivalentQuantities.Contains(p.Quantity)).ToList();
+                megaResults = megaResults.Where(p => equivalentQuantities.Contains(p.Quantity)).ToList(); // Added for Mega results
             }
 
             var viewModel = new SearchViewModel
             {
                 CarrefourResults = carrefourResults,
-                KauflandResults = kauflandResults
+                KauflandResults = kauflandResults,
+                AuchanResults = auchanResults,
+                MegaResults = megaResults // Added for Mega results
             };
 
             // Save the results to the database
-            foreach (var item in viewModel.CarrefourResults.Concat(viewModel.KauflandResults))
+            foreach (var item in viewModel.CarrefourResults.Concat(viewModel.KauflandResults).Concat(viewModel.AuchanResults).Concat(viewModel.MegaResults)) // Updated to include Mega results
             {
                 var product = new Product
                 {
@@ -144,7 +156,6 @@ namespace MDS_PROJECT.Controllers
 
             return View("Index", viewModel);
         }
-
 
         private async Task<string> GetSearchResult(string scriptPath, string query)
         {
@@ -185,7 +196,6 @@ namespace MDS_PROJECT.Controllers
 
         private List<ItemResult> ParseKauflandResults(string results)
         {
-            Console.WriteLine("SUNT IN KAUFLAND");
             List<ItemResult> kauflandResults = new List<ItemResult>();
             var lines = results.Split(new string[] { "--------------------------------" }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -216,6 +226,73 @@ namespace MDS_PROJECT.Controllers
             }
 
             return kauflandResults;
+        }
+
+        private List<ItemResult> ParseAuchanResults(string results)
+        {
+            List<ItemResult> auchanResults = new List<ItemResult>();
+            var lines = results.Split(new string[] { "--------------------------------------------------" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var line in lines)
+            {
+                string pattern = @"^(.*(?:\r?\n.*?)*?),\s*([\d,]+)\s*lei(?:\s*\+[\d,]+leigarantie)?(?:\r?\n\s*[\d,]+\s*lei)?$";
+                Match match = Regex.Match(line.Trim(), pattern, RegexOptions.Multiline);
+
+                if (match.Success)
+                {
+                    string itemName = match.Groups[1].Value.Trim().Replace("\r\n", " ");
+                    string price = match.Groups[2].Value.Trim();
+                    string quantityPattern = @"(\d+\.?\d*)\s*(l|kg|g|ml)"; // Pattern to extract quantity and measure
+
+                    Match quantityMatch = Regex.Match(itemName, quantityPattern);
+                    string quantity = quantityMatch.Success ? quantityMatch.Groups[1].Value.Trim() : "";
+                    string measureQuantity = quantityMatch.Success ? quantityMatch.Groups[2].Value.Trim() : "";
+
+                    auchanResults.Add(new ItemResult
+                    {
+                        ItemName = itemName,
+                        Quantity = quantity,
+                        MeasureQuantity = measureQuantity,
+                        Price = price + " Lei",
+                        Store = "Auchan"
+                    });
+                }
+            }
+
+            return auchanResults;
+        }
+
+        private List<ItemResult> ParseMegaResults(string results)
+        {
+            List<ItemResult> megaResults = new List<ItemResult>();
+            var lines = results.Split(new string[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var line in lines)
+            {
+                string pattern = @"^Text for <a> element in li element \d+: (.+)$";
+                Match match = Regex.Match(line.Trim(), pattern);
+
+                if (match.Success)
+                {
+                    string itemName = match.Groups[1].Value.Trim();
+                    string quantityPattern = @"(\d+\.?\d*)\s*(l|kg|g|ml)"; // Pattern to extract quantity and measure
+
+                    Match quantityMatch = Regex.Match(itemName, quantityPattern);
+                    string quantity = quantityMatch.Success ? quantityMatch.Groups[1].Value.Trim() : "";
+                    string measureQuantity = quantityMatch.Success ? quantityMatch.Groups[2].Value.Trim() : "";
+
+                    megaResults.Add(new ItemResult
+                    {
+                        ItemName = itemName,
+                        Quantity = quantity,
+                        MeasureQuantity = measureQuantity,
+                        Price = "Unknown", // Update this if you have price information
+                        Store = "Mega"
+                    });
+                }
+            }
+
+            return megaResults;
         }
 
         private List<string> GetEquivalentQuantities(string quantity)
