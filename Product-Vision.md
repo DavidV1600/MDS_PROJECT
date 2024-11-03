@@ -18,7 +18,7 @@ Provides users with the ability to:
 - Find the closest physical store for immediate purchases.
 
 ## UNLIKE
-**BRINGO**, which focuses on home delivery from a single retailer, our app empowers users by allowing:
+**Other platforms**, which focuses on home delivery from a single retailer, our app empowers users by allowing:
 - **Cross-platform price comparison** for enhanced choice and flexibility.
 - **Multiple purchase options** — online shopping or visiting nearby physical stores for in-person shopping.
 
